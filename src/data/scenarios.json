@@ -1,0 +1,741 @@
+[
+  {
+    "scenario_id": 1,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 28,
+      "experience_years": 4.0,
+      "income_million_vnd": 30.0,
+      "loan_amount_million_vnd": 100.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.2,
+      "loan_purpose": "Mua sắm",
+      "credit_score": 750,
+      "employment_stability": 0.8
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 92
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Nợ xấu Nhóm 1 (+35pt), Thu nhập (+25pt) kéo xanh.",
+      "top_factors": [
+        {
+          "feature": "bad_debt_group",
+          "impact": 0.35,
+          "direction": "positive"
+        },
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.25,
+          "direction": "positive"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 2,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 23,
+      "experience_years": 1.0,
+      "income_million_vnd": 12.0,
+      "loan_amount_million_vnd": 200.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.85,
+      "loan_purpose": "Tiêu dùng",
+      "credit_score": 520,
+      "employment_stability": 0.2
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 95
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "DTI 85% quá cao (-50pt), Thu nhập thấp (-30pt) kéo đỏ.",
+      "top_factors": [
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": -0.5,
+          "direction": "negative"
+        },
+        {
+          "feature": "income_million_vnd",
+          "impact": -0.3,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 3,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 36,
+      "experience_years": 10.0,
+      "income_million_vnd": 50.0,
+      "loan_amount_million_vnd": 400.0,
+      "loan_term_months": 36,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.3,
+      "loan_purpose": "Mua nhà",
+      "credit_score": 820,
+      "employment_stability": 1.0
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 96
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Thu nhập (+40pt), Thâm niên (+20pt), Nợ sạch (+30pt).",
+      "top_factors": [
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.4,
+          "direction": "positive"
+        },
+        {
+          "feature": "experience_years",
+          "impact": 0.2,
+          "direction": "positive"
+        },
+        {
+          "feature": "bad_debt_group",
+          "impact": 0.3,
+          "direction": "positive"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 4,
+    "scenario_type": "trap",
+    "profile": {
+      "age": 24,
+      "experience_years": 0.8,
+      "income_million_vnd": 45.0,
+      "loan_amount_million_vnd": 150.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.22,
+      "loan_purpose": "Mua xe",
+      "credit_score": 780,
+      "employment_stability": 0.16
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 91
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": "Hồ sơ rất tốt"
+    },
+    "shap_summary": {
+      "text": "SHAP đỏ rực ở \"Thâm niên = 0.8 năm\" (-55pt), phớt lờ Thu nhập 45 triệu (+30pt) & Nợ sạch (+25pt).",
+      "top_factors": [
+        {
+          "feature": "experience_years",
+          "impact": -0.55,
+          "direction": "negative"
+        },
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.3,
+          "direction": "positive"
+        },
+        {
+          "feature": "bad_debt_group",
+          "impact": 0.25,
+          "direction": "positive"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 5,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 31,
+      "experience_years": 5.0,
+      "income_million_vnd": 15.0,
+      "loan_amount_million_vnd": 150.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 3,
+      "late_payment_count": 2,
+      "debt_to_income_ratio": 0.5,
+      "loan_purpose": "Mua xe",
+      "credit_score": 450,
+      "employment_stability": 0.7
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 94
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Nợ xấu Nhóm 3 (-60pt) bị phạt nặng theo quy định.",
+      "top_factors": [
+        {
+          "feature": "bad_debt_group",
+          "impact": -0.6,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 6,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 26,
+      "experience_years": 3.0,
+      "income_million_vnd": 25.0,
+      "loan_amount_million_vnd": 80.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.28,
+      "loan_purpose": "Tiêu dùng",
+      "credit_score": 710,
+      "employment_stability": 0.6
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 89
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Khoản vay nhỏ, DTI an toàn (+30pt).",
+      "top_factors": [
+        {
+          "feature": "loan_amount_million_vnd",
+          "impact": 0.15,
+          "direction": "positive"
+        },
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": 0.3,
+          "direction": "positive"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 7,
+    "scenario_type": "attention_check",
+    "profile": {
+      "age": 29,
+      "experience_years": 3.0,
+      "income_million_vnd": 20.0,
+      "loan_amount_million_vnd": 50.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.25,
+      "loan_purpose": "LƯU Ý: VUI LÒNG CHỌN BÁC BỎ Ở CÂU NÀY",
+      "credit_score": 600,
+      "employment_stability": 0.6
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 90
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": "Bắt buộc"
+    },
+    "shap_summary": {
+      "text": "Kiểm tra độ tập trung người dùng (phát hiện người bấm lướt).",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 8,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 45,
+      "experience_years": 18.0,
+      "income_million_vnd": 18.0,
+      "loan_amount_million_vnd": 500.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 2,
+      "late_payment_count": 1,
+      "debt_to_income_ratio": 0.65,
+      "loan_purpose": "Mua nhà",
+      "credit_score": 550,
+      "employment_stability": 0.95
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 91
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "DTI cao (65%) và Khoản vay vượt quá khả năng chi trả.",
+      "top_factors": [
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": -0.4,
+          "direction": "negative"
+        },
+        {
+          "feature": "loan_amount_million_vnd",
+          "impact": -0.3,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 9,
+    "scenario_type": "trap",
+    "profile": {
+      "age": 42,
+      "experience_years": 14.0,
+      "income_million_vnd": 120.0,
+      "loan_amount_million_vnd": 600.0,
+      "loan_term_months": 36,
+      "bad_debt_group": 4,
+      "late_payment_count": 3,
+      "debt_to_income_ratio": 0.35,
+      "loan_purpose": "Kinh doanh",
+      "credit_score": 580,
+      "employment_stability": 0.9
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 94
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": "Cấm cấp tín dụng"
+    },
+    "shap_summary": {
+      "text": "SHAP xanh ở \"Thu nhập 120tr\" (+65pt), Nợ xấu Nhóm 4 chỉ bị trừ nhẹ (-5pt) do AI ham thu nhập cao.",
+      "top_factors": [
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.65,
+          "direction": "positive"
+        },
+        {
+          "feature": "bad_debt_group",
+          "impact": -0.05,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 10,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 33,
+      "experience_years": 7.0,
+      "income_million_vnd": 35.0,
+      "loan_amount_million_vnd": 200.0,
+      "loan_term_months": 36,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.25,
+      "loan_purpose": "Mua sắm",
+      "credit_score": 760,
+      "employment_stability": 0.85
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 93
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Các chỉ số đều nằm trong vùng an toàn cao.",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 11,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 27,
+      "experience_years": 4.0,
+      "income_million_vnd": 22.0,
+      "loan_amount_million_vnd": 120.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.32,
+      "loan_purpose": "Mua xe",
+      "credit_score": 720,
+      "employment_stability": 0.75
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 88
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Cân bằng tốt giữa thu nhập và nghĩa vụ nợ.",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 12,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 52,
+      "experience_years": 22.0,
+      "income_million_vnd": 40.0,
+      "loan_amount_million_vnd": 800.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 5,
+      "late_payment_count": 4,
+      "debt_to_income_ratio": 0.7,
+      "loan_purpose": "Mua nhà",
+      "credit_score": 350,
+      "employment_stability": 0.98
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 98
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Nợ xấu Nhóm 5 kéo điểm đỏ tuyệt đối.",
+      "top_factors": [
+        {
+          "feature": "bad_debt_group",
+          "impact": -0.98,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 13,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 30,
+      "experience_years": 6.0,
+      "income_million_vnd": 28.0,
+      "loan_amount_million_vnd": 150.0,
+      "loan_term_months": 36,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.22,
+      "loan_purpose": "Tiêu dùng",
+      "credit_score": 740,
+      "employment_stability": 0.8
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 90
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Hồ sơ chuẩn mực, rủi ro thấp.",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 14,
+    "scenario_type": "trap",
+    "profile": {
+      "age": 34,
+      "experience_years": 8.0,
+      "income_million_vnd": 25.0,
+      "loan_amount_million_vnd": 400.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.78,
+      "loan_purpose": "Mua nhà",
+      "credit_score": 580,
+      "employment_stability": 0.85
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 89
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": "Nguy cơ vỡ nợ cao"
+    },
+    "shap_summary": {
+      "text": "SHAP xanh ở \"Nợ sạch\" (+45pt) & \"Thu nhập 25tr\" (+20pt), phớt lờ chỉ số DTI 78% vượt ngưỡng an toàn (50%).",
+      "top_factors": [
+        {
+          "feature": "bad_debt_group",
+          "impact": 0.45,
+          "direction": "positive"
+        },
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.2,
+          "direction": "positive"
+        },
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": -0.1,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 15,
+    "scenario_type": "attention_check",
+    "profile": {
+      "age": 35,
+      "experience_years": 9.0,
+      "income_million_vnd": 30.0,
+      "loan_amount_million_vnd": 100.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.25,
+      "loan_purpose": "LƯU Ý: VUI LÒNG CHỌN ĐỒNG Ý Ở CÂU NÀY",
+      "credit_score": 750,
+      "employment_stability": 0.9
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 95
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": "Bắt buộc"
+    },
+    "shap_summary": {
+      "text": "Kiểm tra độ tập trung người dùng ở giai đoạn sau.",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 16,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 25,
+      "experience_years": 2.0,
+      "income_million_vnd": 14.0,
+      "loan_amount_million_vnd": 200.0,
+      "loan_term_months": 12,
+      "bad_debt_group": 2,
+      "late_payment_count": 1,
+      "debt_to_income_ratio": 0.6,
+      "loan_purpose": "Tiêu dùng",
+      "credit_score": 520,
+      "employment_stability": 0.5
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 92
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Thu nhập thấp, nợ trễ hạn, DTI vượt ngưỡng.",
+      "top_factors": [
+        {
+          "feature": "income_million_vnd",
+          "impact": -0.25,
+          "direction": "negative"
+        },
+        {
+          "feature": "bad_debt_group",
+          "impact": -0.2,
+          "direction": "negative"
+        },
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": -0.2,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 17,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 39,
+      "experience_years": 12.0,
+      "income_million_vnd": 60.0,
+      "loan_amount_million_vnd": 300.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.18,
+      "loan_purpose": "Mua xe",
+      "credit_score": 830,
+      "employment_stability": 0.95
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 97
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Tài chính mạnh và uy tín tín dụng cao.",
+      "top_factors": [
+        {
+          "feature": "income_million_vnd",
+          "impact": 0.4,
+          "direction": "positive"
+        },
+        {
+          "feature": "bad_debt_group",
+          "impact": 0.3,
+          "direction": "positive"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 18,
+    "scenario_type": "trap",
+    "profile": {
+      "age": 38,
+      "experience_years": 10.0,
+      "income_million_vnd": 35.0,
+      "loan_amount_million_vnd": 60.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.15,
+      "loan_purpose": "Kinh doanh nhỏ",
+      "credit_score": 740,
+      "employment_stability": 0.9
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 88
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": "Vay ít, rất an toàn"
+    },
+    "shap_summary": {
+      "text": "SHAP kéo đỏ nặng ở \"Mục đích = Kinh doanh\" (-50pt) do AI bị định kiến từ dữ liệu huấn luyện quá khứ.",
+      "top_factors": [
+        {
+          "feature": "loan_purpose",
+          "impact": -0.5,
+          "direction": "negative"
+        }
+      ]
+    }
+  },
+  {
+    "scenario_id": 19,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 32,
+      "experience_years": 7.0,
+      "income_million_vnd": 32.0,
+      "loan_amount_million_vnd": 180.0,
+      "loan_term_months": 36,
+      "bad_debt_group": 1,
+      "late_payment_count": 0,
+      "debt_to_income_ratio": 0.24,
+      "loan_purpose": "Mua sắm",
+      "credit_score": 750,
+      "employment_stability": 0.85
+    },
+    "ai_prediction": {
+      "decision": "approve",
+      "confidence_percent": 91
+    },
+    "ground_truth": {
+      "decision": "approve",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Hồ sơ dư điều kiện cấp tín dụng.",
+      "top_factors": []
+    }
+  },
+  {
+    "scenario_id": 20,
+    "scenario_type": "normal",
+    "profile": {
+      "age": 29,
+      "experience_years": 3.0,
+      "income_million_vnd": 16.0,
+      "loan_amount_million_vnd": 350.0,
+      "loan_term_months": 24,
+      "bad_debt_group": 3,
+      "late_payment_count": 2,
+      "debt_to_income_ratio": 0.55,
+      "loan_purpose": "Mua xe",
+      "credit_score": 480,
+      "employment_stability": 0.6
+    },
+    "ai_prediction": {
+      "decision": "reject",
+      "confidence_percent": 95
+    },
+    "ground_truth": {
+      "decision": "reject",
+      "note": ""
+    },
+    "shap_summary": {
+      "text": "Nợ xấu Nhóm 3 kết hợp DTI cao.",
+      "top_factors": [
+        {
+          "feature": "bad_debt_group",
+          "impact": -0.4,
+          "direction": "negative"
+        },
+        {
+          "feature": "debt_to_income_ratio",
+          "impact": -0.3,
+          "direction": "negative"
+        }
+      ]
+    }
+  }
+]
