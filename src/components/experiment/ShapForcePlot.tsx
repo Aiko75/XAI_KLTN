@@ -16,8 +16,8 @@ export default function ShapForcePlot({
   confidencePercent,
   factors,
 }: ShapForcePlotProps) {
-  // Base value is typically 0.5 (50%)
-  const baseValue = 50;
+  // Base value (expected approval rate over dataset) is set to 65%
+  const baseValue = 65;
   
   // Output value (probability of approval)
   const outputValue =
@@ -31,24 +31,24 @@ export default function ShapForcePlot({
         SHAP Force Plot (Mô hình trực quan hóa lực đẩy)
       </h3>
       <p className="mb-6 text-[12px] text-zinc-500">
-        Mỗi yếu tố đóng vai trò như một lực đẩy điểm số duyệt tín dụng rời xa mức trung bình (50%).
+        Mỗi yếu tố đóng vai trò như một lực đẩy điểm số duyệt tín dụng rời xa mức trung bình kỳ vọng E[f(X)] = 65%.
       </p>
 
       {/* Force Plot Visual Bar */}
-      <div className="relative mb-8 pt-8">
+      <div className="relative mb-8 pt-8 h-20">
         {/* Scale Numbers */}
-        <div className="absolute top-0 left-0 right-0 flex justify-between px-1 text-[10px] font-mono text-zinc-400">
-          <span>0%</span>
-          <span>25%</span>
-          <span className="font-bold text-zinc-500">50% (Base)</span>
-          <span>75%</span>
-          <span>100%</span>
+        <div className="absolute top-0 left-0 right-0 h-4 text-[10px] font-mono text-zinc-400">
+          <span className="absolute left-0 -translate-x-1/2">0%</span>
+          <span className="absolute left-[30%] -translate-x-1/2">30%</span>
+          <span className="absolute left-[65%] -translate-x-1/2 font-bold text-zinc-500">65% (Base)</span>
+          <span className="absolute left-[85%] -translate-x-1/2">85%</span>
+          <span className="absolute left-[100%] -translate-x-1/2">100%</span>
         </div>
 
         {/* Outer Bar Container */}
         <div className="relative h-7 w-full overflow-hidden rounded bg-zinc-100 dark:bg-zinc-900">
           {/* Base Value Line */}
-          <div className="absolute top-0 bottom-0 left-1/2 z-10 w-0.5 border-l border-dashed border-zinc-400" />
+          <div className="absolute top-0 bottom-0 left-[65%] z-10 w-0.5 border-l border-dashed border-zinc-400" />
 
           {/* Force Span */}
           {isApproved ? (
@@ -56,7 +56,7 @@ export default function ShapForcePlot({
             <div
               className="absolute top-0 bottom-0 flex items-center justify-end bg-gradient-to-r from-emerald-500/20 to-emerald-500 bg-emerald-500 px-3 text-[10px] font-bold text-white transition-all duration-500"
               style={{
-                left: "50%",
+                left: "65%",
                 width: `${outputValue - baseValue}%`,
               }}
             >
@@ -84,14 +84,14 @@ export default function ShapForcePlot({
 
         {/* Pointer Label */}
         <div
-          className="absolute -bottom-6 -translate-x-1/2 text-center transition-all duration-500"
+          className="absolute bottom-0 -translate-x-1/2 text-center transition-all duration-500"
           style={{ left: `${outputValue}%` }}
         >
           <span className="block text-[11px] font-mono font-bold text-zinc-900 dark:text-zinc-100">
-            {outputValue}%
+            f(x) = {outputValue}%
           </span>
           <span className="block text-[9px] uppercase tracking-wider text-zinc-400">
-            Output
+            Output Value
           </span>
         </div>
       </div>
@@ -108,9 +108,9 @@ export default function ShapForcePlot({
               .map((f, i) => {
                 const meta = FEATURES_METADATA[f.feature];
                 return (
-                  <li key={i} className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-500">
+                  <li key={i} className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-500 font-mono">
                     <span>{meta ? meta.label : f.feature}</span>
-                    <span className="font-mono font-semibold">+{Math.round(f.impact * 100)}%</span>
+                    <span className="font-semibold">+{Math.round(f.impact * 100)}%</span>
                   </li>
                 );
               })}
@@ -130,9 +130,9 @@ export default function ShapForcePlot({
               .map((f, i) => {
                 const meta = FEATURES_METADATA[f.feature];
                 return (
-                  <li key={i} className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-500">
+                  <li key={i} className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-500 font-mono">
                     <span>{meta ? meta.label : f.feature}</span>
-                    <span className="font-mono font-semibold">{Math.round(f.impact * 100)}%</span>
+                    <span className="font-semibold">{Math.round(f.impact * 100)}%</span>
                   </li>
                 );
               })}
