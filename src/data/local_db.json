@@ -1,0 +1,43 @@
+{
+  "users": [
+    {
+      "user_id": "u_20260731103616129500",
+      "name": "Tester_Layout",
+      "student_code": "999999",
+      "group_assigned": "C",
+      "start_time": "2026-07-31T10:36:16.129Z",
+      "end_time": null,
+      "feedback": null
+    }
+  ],
+  "response_logs": [
+    {
+      "id": 1,
+      "user_id": "u_20260731103616129500",
+      "scenario_id": 1,
+      "user_decision": "agree",
+      "time_spent_seconds": 47.307,
+      "is_correct_on_error_case": null,
+      "created_at": "2026-07-31T10:37:21.983Z"
+    },
+    {
+      "id": 2,
+      "user_id": "u_20260731103616129500",
+      "scenario_id": 2,
+      "user_decision": "agree",
+      "time_spent_seconds": 118.13,
+      "is_correct_on_error_case": null,
+      "created_at": "2026-07-31T10:39:20.133Z"
+    },
+    {
+      "id": 3,
+      "user_id": "u_20260731103616129500",
+      "scenario_id": 3,
+      "user_decision": "agree",
+      "time_spent_seconds": 5.254,
+      "is_correct_on_error_case": null,
+      "created_at": "2026-07-31T10:39:25.411Z"
+    }
+  ],
+  "survey_logs": []
+}

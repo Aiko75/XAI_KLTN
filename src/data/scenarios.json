@@ -1,741 +1,1224 @@
-[
-  {
-    "scenario_id": 1,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 28,
-      "experience_years": 4.0,
-      "income_million_vnd": 30.0,
-      "loan_amount_million_vnd": 100.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.2,
-      "loan_purpose": "Mua sắm",
-      "credit_score": 750,
-      "employment_stability": 0.8
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 92
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Nợ xấu Nhóm 1 (+35pt), Thu nhập (+25pt) kéo xanh.",
-      "top_factors": [
+{
+  "scenarios": [
+    {
+      "scenario_id": 1,
+      "scenario_type": "trap",
+      "profile": {
+        "Age": 73,
+        "MonthlyIncome": 32365754,
+        "LoanAmount": 216213313,
+        "CreditScore": 696,
+        "TotalDebtToIncomeRatio": 0.2104982691194492,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 59
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": "AI đoán sai do bỏ qua điều kiện nợ xấu hoặc DTI vượt ngưỡng."
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Khoản vay (-23%), Tỷ lệ DTI (-4%), vượt trội so với yếu tố tích cực như Thu nhập (+35%), Điểm tín dụng (+22%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.22960612622506496,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.2204776460103573,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.035990312976479095,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
         {
-          "feature": "bad_debt_group",
-          "impact": 0.35,
-          "direction": "positive"
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ khoản vay (-23%), tỷ lệ dti (-4%), vượt trội so với yếu tố tích cực như thu nhập (+35%), điểm tín dụng (+22%). Điều này tạo nên mức độ tin cậy 59%."
         },
         {
-          "feature": "income_million_vnd",
-          "impact": 0.25,
-          "direction": "positive"
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (21%), và điểm tín dụng tốt (696 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Cảnh báo: Khách hàng có các chỉ số tài chính rất tốt và đủ điều kiện duyệt vay, nhưng AI vẫn từ chối nhầm do các thiên lệch ngẫu nhiên của mô hình. Bạn nên bác bỏ quyết định của AI."
+        }
+      ]
+    },
+    {
+      "scenario_id": 2,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 36,
+        "MonthlyIncome": 25158737,
+        "LoanAmount": 57990257,
+        "CreditScore": 499,
+        "TotalDebtToIncomeRatio": 0.1021499192309803,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Self-Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 64
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Tỷ lệ DTI (+35%), Khoản vay (+16%), lấn át hoàn toàn điểm trừ từ Điểm tín dụng (-3%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.15955885182097185,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.06965288866149577,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.03181615919531451,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như tỷ lệ dti (+35%), khoản vay (+16%), lấn át hoàn toàn điểm trừ từ điểm tín dụng (-3%). Điều này tạo nên mức độ tin cậy 64%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (499 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 3,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 37,
+        "MonthlyIncome": 22389614,
+        "LoanAmount": 94744502,
+        "CreditScore": 594,
+        "TotalDebtToIncomeRatio": 0.1804154528987787,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 60
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Thu nhập (-13%), Điểm tín dụng (-3%), vượt trội so với yếu tố tích cực như Tỷ lệ DTI (+35%), Khoản vay (+20%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.20214017995374509,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": -0.1254098150435588,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.027219457619467206,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ thu nhập (-13%), điểm tín dụng (-3%), vượt trội so với yếu tố tích cực như tỷ lệ dti (+35%), khoản vay (+20%). Điều này tạo nên mức độ tin cậy 60%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (594 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 4,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 42,
+        "MonthlyIncome": 27880982,
+        "LoanAmount": 118785693,
+        "CreditScore": 552,
+        "TotalDebtToIncomeRatio": 0.1504954016313275,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 55
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Tỷ lệ DTI (+35%), Thu nhập (+33%), lấn át hoàn toàn điểm trừ từ Điểm tín dụng (-5%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.3348966802454428,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.08301245165370405,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.05304593188611413,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như tỷ lệ dti (+35%), thu nhập (+33%), lấn át hoàn toàn điểm trừ từ điểm tín dụng (-5%). Điều này tạo nên mức độ tin cậy 55%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (552 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 5,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 22,
+        "MonthlyIncome": 23557895,
+        "LoanAmount": 110100631,
+        "CreditScore": 503,
+        "TotalDebtToIncomeRatio": 0.2351221749448646,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 82
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Tuổi (-34%), Điểm tín dụng (-19%), vượt trội so với yếu tố tích cực như Khoản vay (+35%), Lịch sử nợ xấu (+3%).",
+        "top_factors": [
+          {
+            "feature": "LoanAmount",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "Age",
+            "impact": -0.34473704842568137,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.1937786478472114,
+            "direction": "negative"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.1748046143361514,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ tuổi (-34%), điểm tín dụng (-19%), vượt trội so với yếu tố tích cực như khoản vay (+35%), lịch sử nợ xấu (+3%). Điều này tạo nên mức độ tin cậy 82%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (503 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 6,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 58,
+        "MonthlyIncome": 20175439,
+        "LoanAmount": 92566194,
+        "CreditScore": 564,
+        "TotalDebtToIncomeRatio": 0.1705288628289459,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 66
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Thu nhập (-27%), Điểm tín dụng (-5%), vượt trội so với yếu tố tích cực như Tỷ lệ DTI (+35%), Khoản vay (+13%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": -0.26997810117506726,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.12818561552680477,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.046921519601950165,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ thu nhập (-27%), điểm tín dụng (-5%), vượt trội so với yếu tố tích cực như tỷ lệ dti (+35%), khoản vay (+13%). Điều này tạo nên mức độ tin cậy 66%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (564 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 7,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 25,
+        "MonthlyIncome": 29898667,
+        "LoanAmount": 146296214,
+        "CreditScore": 571,
+        "TotalDebtToIncomeRatio": 0.2188130896224162,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 69
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Tuổi (-11%), Tỷ lệ DTI (-8%), vượt trội so với yếu tố tích cực như Thu nhập (+35%), Lịch sử nợ xấu (+1%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "Age",
+            "impact": -0.10805078119517819,
+            "direction": "negative"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.08050076236981935,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.02982194332109728,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ tuổi (-11%), tỷ lệ dti (-8%), vượt trội so với yếu tố tích cực như thu nhập (+35%), lịch sử nợ xấu (+1%). Điều này tạo nên mức độ tin cậy 69%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (571 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 8,
+      "scenario_type": "trap",
+      "profile": {
+        "Age": 55,
+        "MonthlyIncome": 18169825,
+        "LoanAmount": 76590374,
+        "CreditScore": 688,
+        "TotalDebtToIncomeRatio": 0.3952613596416974,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 76
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": "AI đoán sai do bỏ qua điều kiện nợ xấu hoặc DTI vượt ngưỡng."
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Tỷ lệ DTI (-33%), Thu nhập (-28%), vượt trội so với yếu tố tích cực như Điểm tín dụng (+35%), Khoản vay (+22%).",
+        "top_factors": [
+          {
+            "feature": "CreditScore",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.3260229141291047,
+            "direction": "negative"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": -0.28497800459300054,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.22400336025158468,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ tỷ lệ dti (-33%), thu nhập (-28%), vượt trội so với yếu tố tích cực như điểm tín dụng (+35%), khoản vay (+22%). Điều này tạo nên mức độ tin cậy 76%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (40%), và điểm tín dụng tốt (688 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Cảnh báo: Khách hàng có các chỉ số tài chính rất tốt và đủ điều kiện duyệt vay, nhưng AI vẫn từ chối nhầm do các thiên lệch ngẫu nhiên của mô hình. Bạn nên bác bỏ quyết định của AI."
+        }
+      ]
+    },
+    {
+      "scenario_id": 9,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 18,
+        "MonthlyIncome": 30399439,
+        "LoanAmount": 82829535,
+        "CreditScore": 608,
+        "TotalDebtToIncomeRatio": 0.1376717813683426,
+        "PreviousLoanDefaults": 1,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 61
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Thu nhập (+35%), Tỷ lệ DTI (+31%), lấn át hoàn toàn điểm trừ từ Tuổi (-12%), Lịch sử nợ xấu (-10%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.31140416531152626,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.18366957206714898,
+            "direction": "positive"
+          },
+          {
+            "feature": "Age",
+            "impact": -0.12428894665582699,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như thu nhập (+35%), tỷ lệ dti (+31%), lấn át hoàn toàn điểm trừ từ tuổi (-12%), lịch sử nợ xấu (-10%). Điều này tạo nên mức độ tin cậy 61%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: khách hàng có 1 lần nợ quá hạn nợ xấu trước đây (Cảnh báo đỏ). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 10,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 45,
+        "MonthlyIncome": 17002947,
+        "LoanAmount": 94495686,
+        "CreditScore": 617,
+        "TotalDebtToIncomeRatio": 0.1810771978253941,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 65
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Thu nhập (-33%), vượt trội so với yếu tố tích cực như Tỷ lệ DTI (+35%), Khoản vay (+13%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": -0.32956266442816284,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.12853957556408716,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.054345413281067595,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ thu nhập (-33%), vượt trội so với yếu tố tích cực như tỷ lệ dti (+35%), khoản vay (+13%). Điều này tạo nên mức độ tin cậy 65%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (18%), và điểm tín dụng tốt (617 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 11,
+      "scenario_type": "trap",
+      "profile": {
+        "Age": 42,
+        "MonthlyIncome": 49258386,
+        "LoanAmount": 202899347,
+        "CreditScore": 632,
+        "TotalDebtToIncomeRatio": 0.1779429122636978,
+        "PreviousLoanDefaults": 1,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 58
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": "AI đoán sai do bỏ qua điều kiện nợ xấu hoặc DTI vượt ngưỡng."
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Thu nhập (+35%), Tỷ lệ DTI (+9%), lấn át hoàn toàn điểm trừ từ Khoản vay (-6%), Lịch sử nợ xấu (-6%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.09028577392404327,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.06455078297002435,
+            "direction": "negative"
+          },
+          {
+            "feature": "PreviousLoanDefaults",
+            "impact": -0.05909379745077537,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như thu nhập (+35%), tỷ lệ dti (+9%), lấn át hoàn toàn điểm trừ từ khoản vay (-6%), lịch sử nợ xấu (-6%). Điều này tạo nên mức độ tin cậy 58%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: khách hàng có 1 lần nợ quá hạn nợ xấu trước đây (Cảnh báo đỏ). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Cảnh báo: Mô hình AI đang bị thiên lệch bởi yếu tố thu nhập cao và bỏ qua lịch sử nợ xấu nghiêm trọng. Quyết duyệt này là SAI LẦM thực tế, bạn nên bác bỏ quyết định của AI."
+        }
+      ]
+    },
+    {
+      "scenario_id": 12,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 38,
+        "MonthlyIncome": 22030877,
+        "LoanAmount": 152821748,
+        "CreditScore": 591,
+        "TotalDebtToIncomeRatio": 0.1747122747083923,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 72
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Thu nhập (-18%), Khoản vay (-9%), vượt trội so với yếu tố tích cực như Tỷ lệ DTI (+35%), Lịch sử phá sản (+1%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": -0.17922451231159744,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.08745573775531573,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.025011489378380884,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ thu nhập (-18%), khoản vay (-9%), vượt trội so với yếu tố tích cực như tỷ lệ dti (+35%), lịch sử phá sản (+1%). Điều này tạo nên mức độ tin cậy 72%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (591 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 13,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 43,
+        "MonthlyIncome": 40017965,
+        "LoanAmount": 226241039,
+        "CreditScore": 653,
+        "TotalDebtToIncomeRatio": 0.1417817003634998,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 73
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Thu nhập (+35%), Tỷ lệ DTI (+29%), lấn át hoàn toàn điểm trừ từ Khoản vay (-12%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.2856408099013289,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.117639342196937,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.08547393226013833,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như thu nhập (+35%), tỷ lệ dti (+29%), lấn át hoàn toàn điểm trừ từ khoản vay (-12%). Điều này tạo nên mức độ tin cậy 73%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (14%), và điểm tín dụng tốt (653 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 14,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 31,
+        "MonthlyIncome": 35531789,
+        "LoanAmount": 286200831,
+        "CreditScore": 530,
+        "TotalDebtToIncomeRatio": 0.2398003695631571,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 80
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Khoản vay (-26%), Tỷ lệ DTI (-13%), vượt trội so với yếu tố tích cực như Thu nhập (+35%), Lịch sử nợ xấu (+1%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.2551666807923344,
+            "direction": "negative"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.13172731349650185,
+            "direction": "negative"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.031734146949615544,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ khoản vay (-26%), tỷ lệ dti (-13%), vượt trội so với yếu tố tích cực như thu nhập (+35%), lịch sử nợ xấu (+1%). Điều này tạo nên mức độ tin cậy 80%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (530 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 15,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 58,
+        "MonthlyIncome": 31273825,
+        "LoanAmount": 118396039,
+        "CreditScore": 672,
+        "TotalDebtToIncomeRatio": 0.102685240220213,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 81
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **DUYỆT VAY** do ghi nhận nhiều yếu tố tích cực như Tỷ lệ DTI (+35%), Thu nhập (+33%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.33437234254204856,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.1157688365002386,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.048533013720229355,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **duyệt vay** do ghi nhận nhiều yếu tố tích cực như tỷ lệ dti (+35%), thu nhập (+33%). Điều này tạo nên mức độ tin cậy 81%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (10%), và điểm tín dụng tốt (672 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 16,
+      "scenario_type": "trap",
+      "profile": {
+        "Age": 36,
+        "MonthlyIncome": 48065684,
+        "LoanAmount": 199650664,
+        "CreditScore": 629,
+        "TotalDebtToIncomeRatio": 0.126772315765551,
+        "PreviousLoanDefaults": 1,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 73
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": "AI đoán sai do bỏ qua điều kiện nợ xấu hoặc DTI vượt ngưỡng."
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Thu nhập (+35%), Tỷ lệ DTI (+21%), lấn át hoàn toàn điểm trừ từ Lịch sử nợ xấu (-5%), Khoản vay (-5%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.21367983792076395,
+            "direction": "positive"
+          },
+          {
+            "feature": "PreviousLoanDefaults",
+            "impact": -0.05327766040408966,
+            "direction": "negative"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.04776163087497269,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như thu nhập (+35%), tỷ lệ dti (+21%), lấn át hoàn toàn điểm trừ từ lịch sử nợ xấu (-5%), khoản vay (-5%). Điều này tạo nên mức độ tin cậy 73%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: khách hàng có 1 lần nợ quá hạn nợ xấu trước đây (Cảnh báo đỏ). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Cảnh báo: Mô hình AI đang bị thiên lệch bởi yếu tố thu nhập cao và bỏ qua lịch sử nợ xấu nghiêm trọng. Quyết duyệt này là SAI LẦM thực tế, bạn nên bác bỏ quyết định của AI."
+        }
+      ]
+    },
+    {
+      "scenario_id": 17,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 28,
+        "MonthlyIncome": 26061754,
+        "LoanAmount": 85970242,
+        "CreditScore": 546,
+        "TotalDebtToIncomeRatio": 0.1597610413177905,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 55
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình nghiêng về đề xuất **DUYỆT VAY** chủ yếu nhờ các yếu tố tích cực như Tỷ lệ DTI (+35%), Khoản vay (+28%), lấn át hoàn toàn điểm trừ từ Điểm tín dụng (-5%), Tuổi (-2%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.28024453445298236,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.1935093170631392,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": -0.05399049554718635,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình nghiêng về đề xuất **duyệt vay** chủ yếu nhờ các yếu tố tích cực như tỷ lệ dti (+35%), khoản vay (+28%), lấn át hoàn toàn điểm trừ từ điểm tín dụng (-5%), tuổi (-2%). Điều này tạo nên mức độ tin cậy 55%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ thực tế có các điểm rủi ro đáng chú ý: điểm tín dụng FICO ở mức trung bình yếu (546 điểm). Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 18,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 34,
+        "MonthlyIncome": 38586947,
+        "LoanAmount": 292613693,
+        "CreditScore": 603,
+        "TotalDebtToIncomeRatio": 0.2465092588411087,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 1,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "reject",
+        "confidence_percent": 82
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **TỪ CHỐI** do chịu ảnh hưởng tiêu cực từ điểm trừ từ Khoản vay (-22%), Lịch sử phá sản (-13%), vượt trội so với yếu tố tích cực như Thu nhập (+35%), Lịch sử nợ xấu (+1%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": -0.2182628759024873,
+            "direction": "negative"
+          },
+          {
+            "feature": "BankruptcyHistory",
+            "impact": -0.12913676308986707,
+            "direction": "negative"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": -0.11202547610380718,
+            "direction": "negative"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Từ chối hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **từ chối** do chịu ảnh hưởng tiêu cực từ điểm trừ từ khoản vay (-22%), lịch sử phá sản (-13%), vượt trội so với yếu tố tích cực như thu nhập (+35%), lịch sử nợ xấu (+1%). Điều này tạo nên mức độ tin cậy 82%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (25%), và điểm tín dụng tốt (603 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 19,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 57,
+        "MonthlyIncome": 35754105,
+        "LoanAmount": 106448210,
+        "CreditScore": 630,
+        "TotalDebtToIncomeRatio": 0.1731606990474937,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 78
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **DUYỆT VAY** do ghi nhận nhiều yếu tố tích cực như Thu nhập (+35%), Tỷ lệ DTI (+16%).",
+        "top_factors": [
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.16153876573761217,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.11258522944803215,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.04668428727711354,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **duyệt vay** do ghi nhận nhiều yếu tố tích cực như thu nhập (+35%), tỷ lệ dti (+16%). Điều này tạo nên mức độ tin cậy 78%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (17%), và điểm tín dụng tốt (630 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
+        }
+      ]
+    },
+    {
+      "scenario_id": 20,
+      "scenario_type": "normal",
+      "profile": {
+        "Age": 57,
+        "MonthlyIncome": 30126035,
+        "LoanAmount": 67816114,
+        "CreditScore": 615,
+        "TotalDebtToIncomeRatio": 0.0844861076147688,
+        "PreviousLoanDefaults": 0,
+        "BankruptcyHistory": 0,
+        "EmploymentStatus": "Employed"
+      },
+      "ai_prediction": {
+        "decision": "approve",
+        "confidence_percent": 82
+      },
+      "ground_truth": {
+        "decision": "approve",
+        "note": ""
+      },
+      "shap_summary": {
+        "text": "Mô hình đề xuất **DUYỆT VAY** do ghi nhận nhiều yếu tố tích cực như Tỷ lệ DTI (+35%), Thu nhập (+26%).",
+        "top_factors": [
+          {
+            "feature": "TotalDebtToIncomeRatio",
+            "impact": 0.35,
+            "direction": "positive"
+          },
+          {
+            "feature": "MonthlyIncome",
+            "impact": 0.2600064020517639,
+            "direction": "positive"
+          },
+          {
+            "feature": "LoanAmount",
+            "impact": 0.1482034232236687,
+            "direction": "positive"
+          },
+          {
+            "feature": "CreditScore",
+            "impact": 0.023721502635187568,
+            "direction": "positive"
+          }
+        ]
+      },
+      "interactive_qa": [
+        {
+          "question": "Tại sao AI lại đề xuất Duyệt hồ sơ này?",
+          "answer": "Mô hình AI nhận thấy mô hình đề xuất **duyệt vay** do ghi nhận nhiều yếu tố tích cực như tỷ lệ dti (+35%), thu nhập (+26%). Điều này tạo nên mức độ tin cậy 82%."
+        },
+        {
+          "question": "Có điểm rủi ro hoặc thuận lợi nào cần lưu ý trong hồ sơ thực tế?",
+          "answer": "Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn (8%), và điểm tín dụng tốt (615 điểm)."
+        },
+        {
+          "question": "Độ tin cậy của giải thích này như thế nào?",
+          "answer": "Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này."
         }
       ]
     }
-  },
-  {
-    "scenario_id": 2,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 23,
-      "experience_years": 1.0,
-      "income_million_vnd": 12.0,
-      "loan_amount_million_vnd": 200.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.85,
-      "loan_purpose": "Tiêu dùng",
-      "credit_score": 520,
-      "employment_stability": 0.2
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 95
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "DTI 85% quá cao (-50pt), Thu nhập thấp (-30pt) kéo đỏ.",
-      "top_factors": [
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": -0.5,
-          "direction": "negative"
-        },
-        {
-          "feature": "income_million_vnd",
-          "impact": -0.3,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 3,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 36,
-      "experience_years": 10.0,
-      "income_million_vnd": 50.0,
-      "loan_amount_million_vnd": 400.0,
-      "loan_term_months": 36,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.3,
-      "loan_purpose": "Mua nhà",
-      "credit_score": 820,
-      "employment_stability": 1.0
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 96
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Thu nhập (+40pt), Thâm niên (+20pt), Nợ sạch (+30pt).",
-      "top_factors": [
-        {
-          "feature": "income_million_vnd",
-          "impact": 0.4,
-          "direction": "positive"
-        },
-        {
-          "feature": "experience_years",
-          "impact": 0.2,
-          "direction": "positive"
-        },
-        {
-          "feature": "bad_debt_group",
-          "impact": 0.3,
-          "direction": "positive"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 4,
-    "scenario_type": "trap",
-    "profile": {
-      "age": 24,
-      "experience_years": 0.8,
-      "income_million_vnd": 45.0,
-      "loan_amount_million_vnd": 150.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.22,
-      "loan_purpose": "Mua xe",
-      "credit_score": 780,
-      "employment_stability": 0.16
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 91
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": "Hồ sơ rất tốt"
-    },
-    "shap_summary": {
-      "text": "SHAP đỏ rực ở \"Thâm niên = 0.8 năm\" (-55pt), phớt lờ Thu nhập 45 triệu (+30pt) & Nợ sạch (+25pt).",
-      "top_factors": [
-        {
-          "feature": "experience_years",
-          "impact": -0.55,
-          "direction": "negative"
-        },
-        {
-          "feature": "income_million_vnd",
-          "impact": 0.3,
-          "direction": "positive"
-        },
-        {
-          "feature": "bad_debt_group",
-          "impact": 0.25,
-          "direction": "positive"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 5,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 31,
-      "experience_years": 5.0,
-      "income_million_vnd": 15.0,
-      "loan_amount_million_vnd": 150.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 3,
-      "late_payment_count": 2,
-      "debt_to_income_ratio": 0.5,
-      "loan_purpose": "Mua xe",
-      "credit_score": 450,
-      "employment_stability": 0.7
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 94
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Nợ xấu Nhóm 3 (-60pt) bị phạt nặng theo quy định.",
-      "top_factors": [
-        {
-          "feature": "bad_debt_group",
-          "impact": -0.6,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 6,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 26,
-      "experience_years": 3.0,
-      "income_million_vnd": 25.0,
-      "loan_amount_million_vnd": 80.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.28,
-      "loan_purpose": "Tiêu dùng",
-      "credit_score": 710,
-      "employment_stability": 0.6
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 89
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Khoản vay nhỏ, DTI an toàn (+30pt).",
-      "top_factors": [
-        {
-          "feature": "loan_amount_million_vnd",
-          "impact": 0.15,
-          "direction": "positive"
-        },
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": 0.3,
-          "direction": "positive"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 7,
-    "scenario_type": "attention_check",
-    "profile": {
-      "age": 29,
-      "experience_years": 3.0,
-      "income_million_vnd": 20.0,
-      "loan_amount_million_vnd": 50.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.25,
-      "loan_purpose": "LƯU Ý: VUI LÒNG CHỌN BÁC BỎ Ở CÂU NÀY",
-      "credit_score": 600,
-      "employment_stability": 0.6
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 90
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": "Bắt buộc"
-    },
-    "shap_summary": {
-      "text": "Kiểm tra độ tập trung người dùng (phát hiện người bấm lướt).",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 8,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 45,
-      "experience_years": 18.0,
-      "income_million_vnd": 18.0,
-      "loan_amount_million_vnd": 500.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 2,
-      "late_payment_count": 1,
-      "debt_to_income_ratio": 0.65,
-      "loan_purpose": "Mua nhà",
-      "credit_score": 550,
-      "employment_stability": 0.95
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 91
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "DTI cao (65%) và Khoản vay vượt quá khả năng chi trả.",
-      "top_factors": [
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": -0.4,
-          "direction": "negative"
-        },
-        {
-          "feature": "loan_amount_million_vnd",
-          "impact": -0.3,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 9,
-    "scenario_type": "trap",
-    "profile": {
-      "age": 42,
-      "experience_years": 14.0,
-      "income_million_vnd": 120.0,
-      "loan_amount_million_vnd": 600.0,
-      "loan_term_months": 36,
-      "bad_debt_group": 4,
-      "late_payment_count": 3,
-      "debt_to_income_ratio": 0.35,
-      "loan_purpose": "Kinh doanh",
-      "credit_score": 580,
-      "employment_stability": 0.9
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 94
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": "Cấm cấp tín dụng"
-    },
-    "shap_summary": {
-      "text": "SHAP xanh ở \"Thu nhập 120tr\" (+65pt), Nợ xấu Nhóm 4 chỉ bị trừ nhẹ (-5pt) do AI ham thu nhập cao.",
-      "top_factors": [
-        {
-          "feature": "income_million_vnd",
-          "impact": 0.65,
-          "direction": "positive"
-        },
-        {
-          "feature": "bad_debt_group",
-          "impact": -0.05,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 10,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 33,
-      "experience_years": 7.0,
-      "income_million_vnd": 35.0,
-      "loan_amount_million_vnd": 200.0,
-      "loan_term_months": 36,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.25,
-      "loan_purpose": "Mua sắm",
-      "credit_score": 760,
-      "employment_stability": 0.85
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 93
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Các chỉ số đều nằm trong vùng an toàn cao.",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 11,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 27,
-      "experience_years": 4.0,
-      "income_million_vnd": 22.0,
-      "loan_amount_million_vnd": 120.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.32,
-      "loan_purpose": "Mua xe",
-      "credit_score": 720,
-      "employment_stability": 0.75
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 88
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Cân bằng tốt giữa thu nhập và nghĩa vụ nợ.",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 12,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 52,
-      "experience_years": 22.0,
-      "income_million_vnd": 40.0,
-      "loan_amount_million_vnd": 800.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 5,
-      "late_payment_count": 4,
-      "debt_to_income_ratio": 0.7,
-      "loan_purpose": "Mua nhà",
-      "credit_score": 350,
-      "employment_stability": 0.98
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 98
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Nợ xấu Nhóm 5 kéo điểm đỏ tuyệt đối.",
-      "top_factors": [
-        {
-          "feature": "bad_debt_group",
-          "impact": -0.98,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 13,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 30,
-      "experience_years": 6.0,
-      "income_million_vnd": 28.0,
-      "loan_amount_million_vnd": 150.0,
-      "loan_term_months": 36,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.22,
-      "loan_purpose": "Tiêu dùng",
-      "credit_score": 740,
-      "employment_stability": 0.8
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 90
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Hồ sơ chuẩn mực, rủi ro thấp.",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 14,
-    "scenario_type": "trap",
-    "profile": {
-      "age": 34,
-      "experience_years": 8.0,
-      "income_million_vnd": 25.0,
-      "loan_amount_million_vnd": 400.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.78,
-      "loan_purpose": "Mua nhà",
-      "credit_score": 580,
-      "employment_stability": 0.85
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 89
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": "Nguy cơ vỡ nợ cao"
-    },
-    "shap_summary": {
-      "text": "SHAP xanh ở \"Nợ sạch\" (+45pt) & \"Thu nhập 25tr\" (+20pt), phớt lờ chỉ số DTI 78% vượt ngưỡng an toàn (50%).",
-      "top_factors": [
-        {
-          "feature": "bad_debt_group",
-          "impact": 0.45,
-          "direction": "positive"
-        },
-        {
-          "feature": "income_million_vnd",
-          "impact": 0.2,
-          "direction": "positive"
-        },
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": -0.1,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 15,
-    "scenario_type": "attention_check",
-    "profile": {
-      "age": 35,
-      "experience_years": 9.0,
-      "income_million_vnd": 30.0,
-      "loan_amount_million_vnd": 100.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.25,
-      "loan_purpose": "LƯU Ý: VUI LÒNG CHỌN ĐỒNG Ý Ở CÂU NÀY",
-      "credit_score": 750,
-      "employment_stability": 0.9
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 95
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": "Bắt buộc"
-    },
-    "shap_summary": {
-      "text": "Kiểm tra độ tập trung người dùng ở giai đoạn sau.",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 16,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 25,
-      "experience_years": 2.0,
-      "income_million_vnd": 14.0,
-      "loan_amount_million_vnd": 200.0,
-      "loan_term_months": 12,
-      "bad_debt_group": 2,
-      "late_payment_count": 1,
-      "debt_to_income_ratio": 0.6,
-      "loan_purpose": "Tiêu dùng",
-      "credit_score": 520,
-      "employment_stability": 0.5
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 92
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Thu nhập thấp, nợ trễ hạn, DTI vượt ngưỡng.",
-      "top_factors": [
-        {
-          "feature": "income_million_vnd",
-          "impact": -0.25,
-          "direction": "negative"
-        },
-        {
-          "feature": "bad_debt_group",
-          "impact": -0.2,
-          "direction": "negative"
-        },
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": -0.2,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 17,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 39,
-      "experience_years": 12.0,
-      "income_million_vnd": 60.0,
-      "loan_amount_million_vnd": 300.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.18,
-      "loan_purpose": "Mua xe",
-      "credit_score": 830,
-      "employment_stability": 0.95
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 97
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Tài chính mạnh và uy tín tín dụng cao.",
-      "top_factors": [
-        {
-          "feature": "income_million_vnd",
-          "impact": 0.4,
-          "direction": "positive"
-        },
-        {
-          "feature": "bad_debt_group",
-          "impact": 0.3,
-          "direction": "positive"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 18,
-    "scenario_type": "trap",
-    "profile": {
-      "age": 38,
-      "experience_years": 10.0,
-      "income_million_vnd": 35.0,
-      "loan_amount_million_vnd": 60.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.15,
-      "loan_purpose": "Kinh doanh nhỏ",
-      "credit_score": 740,
-      "employment_stability": 0.9
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 88
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": "Vay ít, rất an toàn"
-    },
-    "shap_summary": {
-      "text": "SHAP kéo đỏ nặng ở \"Mục đích = Kinh doanh\" (-50pt) do AI bị định kiến từ dữ liệu huấn luyện quá khứ.",
-      "top_factors": [
-        {
-          "feature": "loan_purpose",
-          "impact": -0.5,
-          "direction": "negative"
-        }
-      ]
-    }
-  },
-  {
-    "scenario_id": 19,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 32,
-      "experience_years": 7.0,
-      "income_million_vnd": 32.0,
-      "loan_amount_million_vnd": 180.0,
-      "loan_term_months": 36,
-      "bad_debt_group": 1,
-      "late_payment_count": 0,
-      "debt_to_income_ratio": 0.24,
-      "loan_purpose": "Mua sắm",
-      "credit_score": 750,
-      "employment_stability": 0.85
-    },
-    "ai_prediction": {
-      "decision": "approve",
-      "confidence_percent": 91
-    },
-    "ground_truth": {
-      "decision": "approve",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Hồ sơ dư điều kiện cấp tín dụng.",
-      "top_factors": []
-    }
-  },
-  {
-    "scenario_id": 20,
-    "scenario_type": "normal",
-    "profile": {
-      "age": 29,
-      "experience_years": 3.0,
-      "income_million_vnd": 16.0,
-      "loan_amount_million_vnd": 350.0,
-      "loan_term_months": 24,
-      "bad_debt_group": 3,
-      "late_payment_count": 2,
-      "debt_to_income_ratio": 0.55,
-      "loan_purpose": "Mua xe",
-      "credit_score": 480,
-      "employment_stability": 0.6
-    },
-    "ai_prediction": {
-      "decision": "reject",
-      "confidence_percent": 95
-    },
-    "ground_truth": {
-      "decision": "reject",
-      "note": ""
-    },
-    "shap_summary": {
-      "text": "Nợ xấu Nhóm 3 kết hợp DTI cao.",
-      "top_factors": [
-        {
-          "feature": "bad_debt_group",
-          "impact": -0.4,
-          "direction": "negative"
-        },
-        {
-          "feature": "debt_to_income_ratio",
-          "impact": -0.3,
-          "direction": "negative"
-        }
-      ]
-    }
-  }
-]
+  ]
+}

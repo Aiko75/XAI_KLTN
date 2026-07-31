@@ -2,17 +2,14 @@ export interface Scenario {
   scenario_id: number;
   scenario_type: "normal" | "trap" | "attention_check";
   profile: {
-    age: number;
-    experience_years: number;
-    income_million_vnd: number;
-    loan_amount_million_vnd: number;
-    loan_term_months: number;
-    bad_debt_group: number;
-    late_payment_count: number;
-    debt_to_income_ratio: number;
-    loan_purpose: string;
-    credit_score: number;
-    employment_stability: number;
+    Age: number;
+    MonthlyIncome: number;
+    LoanAmount: number;
+    CreditScore: number;
+    TotalDebtToIncomeRatio: number;
+    PreviousLoanDefaults: number;
+    BankruptcyHistory: number;
+    EmploymentStatus: string;
   };
   ai_prediction: {
     decision: "approve" | "reject";
@@ -30,6 +27,10 @@ export interface Scenario {
       direction: "positive" | "negative";
     }>;
   };
+  interactive_qa?: Array<{
+    question: string;
+    answer: string;
+  }>;
 }
 
 export interface StartUserResponse {
@@ -66,6 +67,11 @@ export async function saveResponse(payload: {
   user_decision: "agree" | "reject";
   time_spent_seconds: number;
   is_correct_on_error_case: boolean | null;
+  hover_count?: number;
+  hover_details?: string;
+  chat_count?: number;
+  chat_history?: string;
+  interactive_clicks?: number;
 }): Promise<void> {
   const res = await fetch("/api/responses", {
     method: "POST",
@@ -90,9 +96,11 @@ export async function saveSurvey(user_id: string, nasa_tlx: Record<string, numbe
   }
 }
 
-export async function finishUser(user_id: string): Promise<void> {
+export async function finishUser(user_id: string, tutorial_time_seconds?: number): Promise<void> {
   const res = await fetch(`/api/users/${user_id}/finish`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tutorial_time_seconds }),
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));

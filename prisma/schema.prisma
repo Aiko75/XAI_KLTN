@@ -11,15 +11,16 @@ datasource db {
 }
 
 model User {
-  user_id        String        @id @db.VarChar(255)
-  name           String?       @db.VarChar(255)
-  student_code   String?       @db.VarChar(100)
-  group_assigned String        @db.Char(1)
-  start_time     DateTime      @default(now()) @db.Timestamptz
-  end_time       DateTime?     @db.Timestamptz
-  feedback       String?       @db.Text
-  responses      ResponseLog[]
-  surveys        SurveyLog[]
+  user_id               String        @id @db.VarChar(255)
+  name                  String?       @db.VarChar(255)
+  student_code          String?       @db.VarChar(100)
+  group_assigned        String        @db.Char(1)
+  start_time            DateTime      @default(now()) @db.Timestamptz
+  end_time              DateTime?     @db.Timestamptz
+  tutorial_time_seconds Float?        @db.DoublePrecision
+  feedback              String?       @db.Text
+  responses             ResponseLog[]
+  surveys               SurveyLog[]
 
   @@map("users")
 }
@@ -32,6 +33,11 @@ model ResponseLog {
   time_spent_seconds       Float    @db.DoublePrecision
   is_correct_on_error_case Boolean?
   created_at               DateTime @default(now()) @db.Timestamptz
+  hover_count              Int      @default(0)
+  hover_details            String?  @db.Text
+  chat_count               Int      @default(0)
+  chat_history             String?  @db.Text
+  interactive_clicks       Int      @default(0)
   user                     User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("response_logs")

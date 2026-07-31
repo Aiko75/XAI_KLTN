@@ -31,13 +31,17 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
   // Map to recharts format
   const data = factors.map((f) => {
     const meta = FEATURES_METADATA[f.feature];
-    const rawVal = f.impact * 100; // Convert to percentage/points
+    const rawVal = f.impact * 100; // Convert to percentage
     return {
       name: meta ? meta.label : f.feature,
       value: Number(rawVal.toFixed(1)),
       rawDirection: f.direction,
     };
   });
+
+  // Calculate dynamic symmetric domain to make bars highly visible
+  const maxVal = Math.max(...data.map((d) => Math.abs(d.value)), 5); // default min scale is 5%
+  const xAxisDomain = [-maxVal, maxVal];
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -51,7 +55,7 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
             layout="vertical"
             margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
           >
-            <XAxis type="number" domain={[-100, 100]} hide />
+            <XAxis type="number" domain={xAxisDomain} hide />
             <YAxis
               dataKey="name"
               type="category"
@@ -61,7 +65,7 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
               tick={{ fill: "#71717a", fontSize: 11 }}
             />
             <Tooltip
-              formatter={(value: any) => [`${value > 0 ? "+" : ""}${value} pt`, "Ảnh hưởng"]}
+              formatter={(value: any) => [`${value > 0 ? "+" : ""}${value}%`, "Mức độ tác động"]}
               contentStyle={{
                 backgroundColor: "rgba(9, 9, 11, 0.95)",
                 borderColor: "#27272a",

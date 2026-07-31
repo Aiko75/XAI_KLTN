@@ -10,6 +10,11 @@ export async function POST(req: NextRequest) {
       user_decision,
       time_spent_seconds,
       is_correct_on_error_case,
+      hover_count,
+      hover_details,
+      chat_count,
+      chat_history,
+      interactive_clicks,
     } = body;
 
     if (!user_id || typeof user_id !== "string") {
@@ -32,6 +37,11 @@ export async function POST(req: NextRequest) {
         user_decision,
         time_spent_seconds,
         is_correct_on_error_case: typeof is_correct_on_error_case === "boolean" ? is_correct_on_error_case : null,
+        hover_count: typeof hover_count === "number" ? hover_count : 0,
+        hover_details: typeof hover_details === "string" ? hover_details : null,
+        chat_count: typeof chat_count === "number" ? chat_count : 0,
+        chat_history: typeof chat_history === "string" ? chat_history : null,
+        interactive_clicks: typeof interactive_clicks === "number" ? interactive_clicks : 0,
       },
     });
 

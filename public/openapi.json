@@ -1,1 +1,434 @@
-{"openapi":"3.1.0","info":{"title":"XAI KLTN Experiment API","version":"0.1.0"},"paths":{"/health":{"get":{"summary":"Health","operationId":"health_health_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":{"type":"string"},"type":"object","title":"Response Health Health Get"}}}}}}},"/api/scenarios":{"get":{"summary":"Get Scenarios","operationId":"get_scenarios_api_scenarios_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":{"items":{"additionalProperties":true,"type":"object"},"type":"array"},"type":"object","title":"Response Get Scenarios Api Scenarios Get"}}}}}}},"/api/users/start":{"post":{"summary":"Start User","operationId":"start_user_api_users_start_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/StartUserRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/StartUserResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/users/{user_id}/finish":{"post":{"summary":"Finish User","operationId":"finish_user_api_users__user_id__finish_post","parameters":[{"name":"user_id","in":"path","required":true,"schema":{"type":"string","title":"User Id"}}],"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"type":"object","additionalProperties":{"type":"string"},"title":"Response Finish User Api Users  User Id  Finish Post"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/responses":{"post":{"summary":"Create Response Log","operationId":"create_response_log_api_responses_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ResponseLogRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":{"type":"string"},"type":"object","title":"Response Create Response Log Api Responses Post"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/survey":{"post":{"summary":"Create Survey Log","operationId":"create_survey_log_api_survey_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SurveyRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"additionalProperties":{"type":"string"},"type":"object","title":"Response Create Survey Log Api Survey Post"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/admin/export":{"get":{"summary":"Admin Export","operationId":"admin_export_admin_export_get","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}}},"components":{"schemas":{"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"ResponseLogRequest":{"properties":{"user_id":{"type":"string","title":"User Id"},"scenario_id":{"type":"integer","minimum":1.0,"title":"Scenario Id"},"user_decision":{"type":"string","pattern":"^(agree|reject)$","title":"User Decision"},"time_spent_seconds":{"type":"number","minimum":0.0,"title":"Time Spent Seconds"},"is_correct_on_error_case":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Is Correct On Error Case"}},"type":"object","required":["user_id","scenario_id","user_decision","time_spent_seconds"],"title":"ResponseLogRequest"},"StartUserRequest":{"properties":{"name":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Name"},"student_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Student Code"}},"type":"object","title":"StartUserRequest"},"StartUserResponse":{"properties":{"user_id":{"type":"string","title":"User Id"},"group_assigned":{"type":"string","title":"Group Assigned"}},"type":"object","required":["user_id","group_assigned"],"title":"StartUserResponse"},"SurveyRequest":{"properties":{"user_id":{"type":"string","title":"User Id"},"nasa_tlx":{"additionalProperties":{"type":"integer"},"type":"object","title":"Nasa Tlx"}},"type":"object","required":["user_id","nasa_tlx"],"title":"SurveyRequest"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "XAI KLTN Experiment API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": { "type": "string" },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios": {
+      "get": {
+        "summary": "Get Scenarios",
+        "operationId": "get_scenarios_api_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": { "additionalProperties": true, "type": "object" },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Get Scenarios Api Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/start": {
+      "post": {
+        "summary": "Start User",
+        "operationId": "start_user_api_users_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartUserRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StartUserResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{user_id}/finish": {
+      "post": {
+        "summary": "Finish User",
+        "operationId": "finish_user_api_users__user_id__finish_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "User Id" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FinishUserRequest" }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "title": "Response Finish User Api Users  User Id  Finish Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{user_id}/feedback": {
+      "post": {
+        "summary": "Submit User Feedback",
+        "operationId": "save_feedback_api_users__user_id__feedback_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "User Id" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FeedbackRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "title": "Response Submit User Feedback"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "Conversational AI Explainer",
+        "operationId": "chat_api_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/responses": {
+      "post": {
+        "summary": "Create Response Log",
+        "operationId": "create_response_log_api_responses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResponseLogRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": { "type": "string" },
+                  "type": "object",
+                  "title": "Response Create Response Log Api Responses Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/survey": {
+      "post": {
+        "summary": "Create Survey Log",
+        "operationId": "create_survey_log_api_survey_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SurveyRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": { "type": "string" },
+                  "type": "object",
+                  "title": "Response Create Survey Log Api Survey Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/export": {
+      "get": {
+        "summary": "Admin Export",
+        "operationId": "admin_export_admin_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "FinishUserRequest": {
+        "properties": {
+          "tutorial_time_seconds": {
+            "type": "number",
+            "title": "Tutorial Time Seconds"
+          }
+        },
+        "type": "object",
+        "title": "FinishUserRequest"
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "feedback": {
+            "type": "string",
+            "title": "Feedback"
+          }
+        },
+        "required": ["feedback"],
+        "type": "object",
+        "title": "FeedbackRequest"
+      },
+      "ChatRequest": {
+        "properties": {
+          "scenario_id": {
+            "type": "integer",
+            "title": "Scenario Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "required": ["scenario_id", "message"],
+        "type": "object",
+        "title": "ChatRequest"
+      },
+      "ChatResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "required": ["answer"],
+        "type": "object",
+        "title": "ChatResponse"
+      },
+      "ResponseLogRequest": {
+        "properties": {
+          "user_id": { "type": "string", "title": "User Id" },
+          "scenario_id": { "type": "integer", "minimum": 1.0, "title": "Scenario Id" },
+          "user_decision": {
+            "type": "string",
+            "pattern": "^(agree|reject)$",
+            "title": "User Decision"
+          },
+          "time_spent_seconds": { "type": "number", "minimum": 0.0, "title": "Time Spent Seconds" },
+          "is_correct_on_error_case": {
+            "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+            "title": "Is Correct On Error Case"
+          },
+          "hover_count": { "type": "integer", "title": "Hover Count", "default": 0 },
+          "hover_details": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Hover Details"
+          },
+          "chat_count": { "type": "integer", "title": "Chat Count", "default": 0 },
+          "chat_history": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Chat History"
+          },
+          "interactive_clicks": { "type": "integer", "title": "Interactive Clicks", "default": 0 }
+        },
+        "type": "object",
+        "required": ["user_id", "scenario_id", "user_decision", "time_spent_seconds"],
+        "title": "ResponseLogRequest"
+      },
+      "StartUserRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Name"
+          },
+          "student_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Student Code"
+          }
+        },
+        "type": "object",
+        "title": "StartUserRequest"
+      },
+      "StartUserResponse": {
+        "properties": {
+          "user_id": { "type": "string", "title": "User Id" },
+          "group_assigned": { "type": "string", "title": "Group Assigned" }
+        },
+        "type": "object",
+        "required": ["user_id", "group_assigned"],
+        "title": "StartUserResponse"
+      },
+      "SurveyRequest": {
+        "properties": {
+          "user_id": { "type": "string", "title": "User Id" },
+          "nasa_tlx": {
+            "additionalProperties": { "type": "integer" },
+            "type": "object",
+            "title": "Nasa Tlx"
+          }
+        },
+        "type": "object",
+        "required": ["user_id", "nasa_tlx"],
+        "title": "SurveyRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

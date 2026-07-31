@@ -7,11 +7,16 @@ export async function POST(
 ) {
   try {
     const { userId } = await params;
+    const body = await req.json().catch(() => ({}));
+    const { tutorial_time_seconds } = body;
     const now = new Date();
 
     await prisma.user.update({
       where: { user_id: userId },
-      data: { end_time: now },
+      data: { 
+        end_time: now,
+        tutorial_time_seconds: typeof tutorial_time_seconds === "number" ? tutorial_time_seconds : undefined,
+      },
     });
 
     return NextResponse.json({ status: "finished" });

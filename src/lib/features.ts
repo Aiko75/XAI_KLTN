@@ -6,69 +6,73 @@ export interface FeatureMetadata {
   color: string;
 }
 
+// Map the 8 features from the Kaggle dataset
 export const FEATURES_METADATA: Record<string, FeatureMetadata> = {
-  age: {
-    key: "age",
+  Age: {
+    key: "Age",
     label: "Tuổi",
     unit: "tuổi",
     format: (val) => `${val} tuổi`,
     color: "#6366f1", // indigo
   },
-  experience_years: {
-    key: "experience_years",
-    label: "Thâm niên công tác",
-    unit: "năm",
-    format: (val) => `${val} năm`,
-    color: "#0ea5e9", // sky
-  },
-  income_million_vnd: {
-    key: "income_million_vnd",
+  MonthlyIncome: {
+    key: "MonthlyIncome",
     label: "Thu nhập hàng tháng",
-    unit: "triệu VNĐ",
-    format: (val) => `${val} triệu VNĐ`,
-    color: "#10b981", // emerald
-  },
-  loan_amount_million_vnd: {
-    key: "loan_amount_million_vnd",
-    label: "Số tiền vay",
-    unit: "triệu VNĐ",
-    format: (val) => `${val} triệu VNĐ`,
-    color: "#f59e0b", // amber
-  },
-  loan_term_months: {
-    key: "loan_term_months",
-    label: "Thời hạn vay",
-    unit: "tháng",
-    format: (val) => `${val} tháng`,
-    color: "#a855f7", // purple
-  },
-  bad_debt_group: {
-    key: "bad_debt_group",
-    label: "Lịch sử nợ xấu",
-    unit: "",
+    unit: "VND",
     format: (val) => {
       const num = Number(val);
-      if (num === 1) return "Nhóm 1 (Tốt)";
-      if (num === 2) return "Nhóm 2 (Chú ý)";
-      if (num === 3) return "Nhóm 3 (Dưới tiêu chuẩn)";
-      if (num === 4) return "Nhóm 4 (Nghi ngờ)";
-      if (num === 5) return "Nhóm 5 (Mất vốn)";
-      return `Nhóm ${val}`;
+      return num.toLocaleString("vi-VN") + " đ";
     },
-    color: "#ef4444", // red
+    color: "#10b981", // emerald
   },
-  debt_to_income_ratio: {
-    key: "debt_to_income_ratio",
-    label: "Tỷ lệ DTI (Nợ trên thu nhập)",
+  LoanAmount: {
+    key: "LoanAmount",
+    label: "Số tiền vay",
+    unit: "VND",
+    format: (val) => {
+      const num = Number(val);
+      return num.toLocaleString("vi-VN") + " đ";
+    },
+    color: "#f59e0b", // amber
+  },
+  CreditScore: {
+    key: "CreditScore",
+    label: "Điểm tín dụng",
+    unit: "điểm",
+    format: (val) => `${val} điểm`,
+    color: "#0ea5e9", // sky
+  },
+  TotalDebtToIncomeRatio: {
+    key: "TotalDebtToIncomeRatio",
+    label: "Tỷ lệ DTI",
     unit: "%",
     format: (val) => `${Math.round(val * 100)}%`,
     color: "#ec4899", // pink
   },
-  loan_purpose: {
-    key: "loan_purpose",
-    label: "Mục đích vay",
+  PreviousLoanDefaults: {
+    key: "PreviousLoanDefaults",
+    label: "Số lần nợ xấu",
+    unit: "lần",
+    format: (val) => `${val} lần`,
+    color: "#ef4444", // red
+  },
+  BankruptcyHistory: {
+    key: "BankruptcyHistory",
+    label: "Lịch sử phá sản",
     unit: "",
-    format: (val) => String(val),
+    format: (val) => (Number(val) === 1 ? "Đã từng phá sản (Có)" : "Không có lịch sử phá sản"),
+    color: "#a855f7", // purple
+  },
+  EmploymentStatus: {
+    key: "EmploymentStatus",
+    label: "Tình trạng việc làm",
+    unit: "",
+    format: (val) => {
+      if (val === "Employed") return "Làm công ăn lương (Employed)";
+      if (val === "Self-Employed") return "Tự doanh (Self-Employed)";
+      if (val === "Unemployed") return "Thất nghiệp (Unemployed)";
+      return String(val);
+    },
     color: "#14b8a6", // teal
   },
 };
