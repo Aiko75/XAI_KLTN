@@ -61,3 +61,48 @@ export const NASA_TLX_QUESTIONS: SurveyQuestion[] = [
     description: "Nhìn chung, gánh nặng nhận thức tổng quát bạn phải trải qua là bao nhiêu?",
   },
 ];
+
+export const NASA_TLX_QUESTIONS_EN: SurveyQuestion[] = [
+  {
+    key: "mental_demand",
+    label: "Mental Demand",
+    lowLabel: "Very Low",
+    highLabel: "Very High",
+    description: "How much mental and perceptual activity was required (e.g. thinking, deciding, calculating, remembering, looking, searching, etc.)?",
+  },
+  {
+    key: "temporal_demand",
+    label: "Temporal Demand",
+    lowLabel: "Very Low",
+    highLabel: "Very High",
+    description: "How much time pressure did you feel due to the rate or pace at which the tasks occurred?",
+  },
+  {
+    key: "performance",
+    label: "Performance",
+    lowLabel: "Failure",
+    highLabel: "Perfect",
+    description: "How successful do you think you were in detecting the errors of the AI system?",
+  },
+  {
+    key: "effort",
+    label: "Effort",
+    lowLabel: "Very Low",
+    highLabel: "Very High",
+    description: "How hard did you have to work (mentally and physically) to accomplish your level of performance?",
+  },
+  {
+    key: "frustration",
+    label: "Frustration Level",
+    lowLabel: "Very Low",
+    highLabel: "Very High",
+    description: "How insecure, discouraged, irritated, stressed, and annoyed did you feel during the task?",
+  },
+  {
+    key: "overall_load",
+    label: "Overall Load",
+    lowLabel: "Very Low",
+    highLabel: "Very High",
+    description: "Overall, how heavy was the general cognitive workload you experienced?",
+  },
+];

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { NASA_TLX_QUESTIONS } from "@/lib/constants";
+import { NASA_TLX_QUESTIONS, NASA_TLX_QUESTIONS_EN } from "@/lib/constants";
 
 interface NasaTlxSurveyProps {
   onSubmit: (answers: Record<string, number>) => void;
   isSubmitting: boolean;
+  lang?: "vi" | "en";
 }
 
-
-export default function NasaTlxSurvey({ onSubmit, isSubmitting }: NasaTlxSurveyProps) {
+export default function NasaTlxSurvey({ onSubmit, isSubmitting, lang = "vi" }: NasaTlxSurveyProps) {
   // Initialize scores with default value of 4 (neutral)
   const [answers, setAnswers] = useState<Record<string, number>>({
     mental_demand: 4,
@@ -27,19 +27,23 @@ export default function NasaTlxSurvey({ onSubmit, isSubmitting }: NasaTlxSurveyP
     onSubmit(answers);
   };
 
+  const questions = lang === "en" ? NASA_TLX_QUESTIONS_EN : NASA_TLX_QUESTIONS;
+
   return (
     <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">
-          Khảo sát tải lượng nhận thức (NASA-TLX)
+          {lang === "en" ? "Cognitive Workload Survey (NASA-TLX)" : "Khảo sát tải lượng nhận thức (NASA-TLX)"}
         </h2>
         <p className="mt-2 text-sm text-zinc-500">
-          Vui lòng trả lời 6 câu hỏi dưới đây dựa trên trải nghiệm thực nghiệm vừa rồi của bạn.
+          {lang === "en" 
+            ? "Please answer the 6 questions below based on your recent underwriting experience."
+            : "Vui lòng trả lời 6 câu hỏi dưới đây dựa trên trải nghiệm thực nghiệm vừa rồi của bạn."}
         </p>
       </div>
 
       <div className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        {NASA_TLX_QUESTIONS.map((q) => (
+        {questions.map((q) => (
           <div key={q.key} className="space-y-3 border-b border-zinc-100 pb-5 last:border-0 last:pb-0 dark:border-zinc-800/80">
             <div>
               <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -62,7 +66,7 @@ export default function NasaTlxSurvey({ onSubmit, isSubmitting }: NasaTlxSurveyP
               <div className="flex justify-between text-[11px] font-medium text-zinc-400">
                 <span>{q.lowLabel} (1)</span>
                 <span className="font-bold text-zinc-800 dark:text-zinc-300">
-                  Điểm chọn: {answers[q.key]} / 7
+                  {lang === "en" ? "Score:" : "Điểm chọn:"} {answers[q.key]} / 7
                 </span>
                 <span>{q.highLabel} (7)</span>
               </div>
@@ -77,7 +81,9 @@ export default function NasaTlxSurvey({ onSubmit, isSubmitting }: NasaTlxSurveyP
           disabled={isSubmitting}
           className="w-full rounded-xl bg-zinc-950 px-6 py-3.5 text-sm font-bold text-zinc-50 shadow-sm transition-colors hover:bg-zinc-800 disabled:bg-zinc-300 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800"
         >
-          {isSubmitting ? "Đang gửi dữ liệu..." : "Hoàn thành và Gửi khảo sát"}
+          {isSubmitting 
+            ? (lang === "en" ? "Submitting data..." : "Đang gửi dữ liệu...") 
+            : (lang === "en" ? "Complete and Submit Survey" : "Hoàn thành và Gửi khảo sát")}
         </button>
       </div>
     </form>

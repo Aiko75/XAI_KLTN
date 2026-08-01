@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import scenariosData from "@/data/scenarios.json";
 
+function getLocalFallbackAnswer(message: string, scenario: any): string {
+  const msgLower = message.toLowerCase();
+  let matchedQa = scenario.interactive_qa[0]; // Default to Q1
+  if (
+    msgLower.includes("rủi ro") ||
+    msgLower.includes("thuận lợi") ||
+    msgLower.includes("chú ý") ||
+    msgLower.includes("lưu ý") ||
+    msgLower.includes("xấu") ||
+    msgLower.includes("risk") ||
+    msgLower.includes("history") ||
+    msgLower.includes("defaults")
+  ) {
+    matchedQa = scenario.interactive_qa[1];
+  } else if (
+    msgLower.includes("tin cậy") ||
+    msgLower.includes("đúng") ||
+    msgLower.includes("sai") ||
+    msgLower.includes("giải thích") ||
+    msgLower.includes("bẫy") ||
+    msgLower.includes("confidence") ||
+    msgLower.includes("trap") ||
+    msgLower.includes("correct")
+  ) {
+    matchedQa = scenario.interactive_qa[2];
+  }
+  return `${matchedQa.answer}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -21,20 +50,11 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      // 🌟 FALLBACK: If GEMINI_API_KEY is not set, use keyword-matching over the pre-generated QA
-      console.warn("⚠️ GEMINI_API_KEY is not configured. Falling back to rule-based Q&A matching.");
-      const msgLower = message.toLowerCase();
-      
-      let matchedQa = scenario.interactive_qa[0]; // Default to Q1 (Why AI decision)
-      if (msgLower.includes("rủi ro") || msgLower.includes("thuận lợi") || msgLower.includes("chú ý") || msgLower.includes("lưu ý") || msgLower.includes("xấu")) {
-        matchedQa = scenario.interactive_qa[1];
-      } else if (msgLower.includes("tin cậy") || msgLower.includes("đúng") || msgLower.includes("sai") || msgLower.includes("giải thích") || msgLower.includes("bẫy")) {
-        matchedQa = scenario.interactive_qa[2];
-      }
-
+    if (!apiKey || apiKey.startsWith("AIzaSyCrY_placeholder") || apiKey === "AIzaSyCrY_nGo11NFI5DEk6MNW7PyVgWatGbdtc") {
+      // 🌟 FALLBACK: If GEMINI_API_KEY is not set or is the placeholder key, fallback to local Q&A matching
+      console.warn("⚠️ GEMINI_API_KEY is placeholder or not configured. Falling back to rule-based Q&A matching.");
       return NextResponse.json({
-        answer: `[Fallback AI Assist] ${matchedQa.answer}`,
+        answer: getLocalFallbackAnswer(message, scenario),
       });
     }
 
@@ -86,23 +106,33 @@ QUY TẮC BẮT BUỘC:
       },
     };
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
+    let answer = "";
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(5000) // Timeout after 5s
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`⚠️ Gemini API returned error (Status ${response.status}), falling back to local Q&A matching: ${errorText}`);
+        answer = getLocalFallbackAnswer(message, scenario);
+      } else {
+        const responseData = await response.json();
+        answer = responseData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+        if (!answer) {
+          answer = getLocalFallbackAnswer(message, scenario);
+        }
       }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini API returned error: ${errorText}`);
+    } catch (e: any) {
+      console.warn(`⚠️ Fetching Gemini API failed/timeout, falling back to local Q&A matching: ${e.message}`);
+      answer = getLocalFallbackAnswer(message, scenario);
     }
-
-    const responseData = await response.json();
-    const answer = responseData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 
-                   "Tôi xin lỗi, hiện tại tôi không thể đưa ra lời giải thích cho hồ sơ này.";
 
     return NextResponse.json({ answer });
   } catch (error: any) {

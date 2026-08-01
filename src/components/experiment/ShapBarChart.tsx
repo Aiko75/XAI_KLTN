@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "recharts";
 import { FEATURES_METADATA } from "@/lib/features";
+import translations from "@/data/translations.json";
 
 interface ShapBarChartProps {
   factors: Array<{
@@ -17,13 +18,16 @@ interface ShapBarChartProps {
     impact: number;
     direction: "positive" | "negative";
   }>;
+  lang?: "vi" | "en";
 }
 
-export default function ShapBarChart({ factors }: ShapBarChartProps) {
+export default function ShapBarChart({ factors, lang = "vi" }: ShapBarChartProps) {
+  const t = (translations as any)[lang];
+
   if (!factors || factors.length === 0) {
     return (
       <div className="flex h-36 items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-4 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/20">
-        Không có dữ liệu giải thích định lượng cho câu hỏi này.
+        {lang === "en" ? "No quantitative explanation data for this question." : "Không có dữ liệu giải thích định lượng cho câu hỏi này."}
       </div>
     );
   }
@@ -32,8 +36,9 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
   const data = factors.map((f) => {
     const meta = FEATURES_METADATA[f.feature];
     const rawVal = f.impact * 100; // Convert to percentage
+    const label = t[`feature_${f.feature}`] || (meta ? meta.label : f.feature);
     return {
-      name: meta ? meta.label : f.feature,
+      name: label,
       value: Number(rawVal.toFixed(1)),
       rawDirection: f.direction,
     };
@@ -46,7 +51,7 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <h3 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-        Mức độ đóng góp của các thuộc tính (SHAP Value)
+        {lang === "en" ? "Feature Contribution Weights (SHAP Values)" : "Mức độ đóng góp của các thuộc tính (SHAP Value)"}
       </h3>
       <div className="h-48 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -65,7 +70,7 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
               tick={{ fill: "#71717a", fontSize: 11 }}
             />
             <Tooltip
-              formatter={(value: any) => [`${value > 0 ? "+" : ""}${value}%`, "Mức độ tác động"]}
+              formatter={(value: any) => [`${value > 0 ? "+" : ""}${value}%`, lang === "en" ? "Impact Weight" : "Mức độ tác động"]}
               contentStyle={{
                 backgroundColor: "rgba(9, 9, 11, 0.95)",
                 borderColor: "#27272a",
@@ -87,11 +92,11 @@ export default function ShapBarChart({ factors }: ShapBarChartProps) {
       <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
         <div className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-rose-500" />
-          <span>Kéo giảm điểm duyệt (Điểm trừ)</span>
+          <span>{lang === "en" ? "Reduces approval score" : "Kéo giảm điểm duyệt (Điểm trừ)"}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span>Thúc đẩy duyệt (Điểm cộng)</span>
+          <span>{lang === "en" ? "Promotes approval" : "Thúc đẩy duyệt (Điểm cộng)"}</span>
         </div>
       </div>
     </div>

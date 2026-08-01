@@ -16,6 +16,7 @@ import {
   WELCOME_DESCRIPTION,
   SIDEBAR_TIPS,
 } from "@/lib/constants";
+import translations from "@/data/translations.json";
 import ProfileTable from "@/components/experiment/ProfileTable";
 import ShapBarChart from "@/components/experiment/ShapBarChart";
 import ShapForcePlot from "@/components/experiment/ShapForcePlot";
@@ -38,7 +39,114 @@ const formatMarkdownBold = (text: string) => {
 
 type AppStep = "WELCOME" | "TUTORIAL" | "TESTING" | "SURVEY" | "FINISHED";
 
+const translateText = (text: string, lang: "vi" | "en") => {
+  if (lang === "vi") return text;
+  let translated = text;
+  
+  // 1. Individual risk factors translations (must run early)
+  translated = translated.replace(/khách hàng có (\d+) lần nợ quá hạn nợ xấu trước đây \(Cảnh báo đỏ\)/gi, "the client has $1 previous default(s) (Red Warning)");
+  translated = translated.replace(/tỷ lệ nợ trên thu nhập DTI ở mức cao (\d+)%/gi, "high Debt-to-Income (DTI) ratio ($1%)");
+  translated = translated.replace(/điểm tín dụng FICO ở mức trung bình yếu (\d+) điểm/gi, "weak FICO credit score ($1 pts)");
+  translated = translated.replace(/hồ sơ có lịch sử nợ xấu nhiều lần/gi, "multiple previous defaults");
+  translated = translated.replace(/tỷ lệ DTI ở mức báo động/gi, "warning level DTI ratio");
+  translated = translated.replace(/điểm tín dụng quá thấp/gi, "extremely low credit score");
+  translated = translated.replace(/khách hàng đã từng phá sản/gi, "previous bankruptcy history");
+
+  // 2. Template sentence overrides (must run before general token overrides)
+  translated = translated.replace(/Hồ sơ thực tế có các điểm rủi ro đáng chú ý: (.*?)\. Bạn cần đối chiếu kỹ lưỡng trước khi phê duyệt\./gi, 
+    "The profile contains notable risk factors: $1. You need to review them carefully before approval.");
+    
+  translated = translated.replace(/Hồ sơ tương đối sạch và an toàn: không có nợ xấu, tỷ lệ DTI an toàn \((.*?)\), và điểm tín dụng tốt \((.*?)\)\./gi,
+    "The profile is relatively clean and safe: no default history, safe DTI ratio ($1), and good credit score ($2).");
+
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:DUYỆT VAY|DUYỆT|approve|approval)\*\* chủ yếu nhờ các yếu tố tích cực như (.*?), lấn át hoàn toàn điểm trừ từ (.*?)\./gi, 
+    "the model leans towards proposing **approval** mainly due to positive factors such as $1, completely outweighing negative factors of $2.");
+    
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:TỪ CHỐI|reject|rejection)\*\* do chịu ảnh hưởng tiêu cực từ điểm trừ từ (.*?), vượt trội so với yếu tố tích cực như (.*?)\./gi,
+    "the model recommends **rejection** due to negative impact from $1, dominating positive factors such as $2.");
+    
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:DUYỆT VAY|DUYỆT|approve|approval)\*\* do ghi nhận nhiều yếu tố tích cực như (.*?)\./gi,
+    "the model recommends **approval** due to multiple positive factors such as $1.");
+    
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:TỪ CHỐI|reject|rejection)\*\* do ghi nhận nhiều điểm trừ từ (.*?)\./gi,
+    "the model recommends **rejection** due to multiple negative factors of $1.");
+    
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:DUYỆT VAY|DUYỆT|approve|approval)\*\* dựa trên các chỉ số an toàn ổn định của hồ sơ\./gi,
+    "the model recommends **approval** based on the stable and safe credit indicators of the profile.");
+    
+  translated = translated.replace(/mô hình (?:nghiêng về )?đề xuất \*\*(?:TỪ CHỐI|reject|rejection)\*\* dựa trên mức độ rủi ro tín dụng chung của hồ sơ\./gi,
+    "the model recommends **rejection** based on the general credit risk of the profile.");
+
+  // Chatbot specific templates
+  translated = translated.replace(/Mô hình AI nhận thấy/gi, "The AI model observes that");
+  
+  // Q2 & Q3 template sentences
+  translated = translated.replace(/Hồ sơ tương đối sạch và an toàn/gi, "The profile is relatively clean and safe");
+  translated = translated.replace(/không có nợ xấu/gi, "no default history");
+  translated = translated.replace(/tỷ lệ DTI an toàn/gi, "safe DTI ratio");
+  translated = translated.replace(/và điểm tín dụng tốt/gi, "and good credit score");
+  translated = translated.replace(/Khách hàng có lịch sử tín dụng rất xấu/gi, "The client has a very poor credit history");
+  translated = translated.replace(/có nợ xấu/gi, "has defaults");
+  translated = translated.replace(/lần nợ quá hạn/gi, "delinquency event(s)");
+  translated = translated.replace(/tỷ lệ DTI ở mức báo động/gi, "DTI ratio is at warning levels");
+  translated = translated.replace(/điểm tín dụng quá thấp/gi, "credit score is too low");
+  translated = translated.replace(/khách hàng đã từng phá sản/gi, "the client has bankruptcy history");
+  translated = translated.replace(/đã từng có tiền án phá sản/gi, "has a bankruptcy record");
+  
+  // Trap checks and warnings
+  translated = translated.replace(/AI quyết định rất chính xác/gi, "The AI decision is highly accurate");
+  translated = translated.replace(/bởi vì nợ xấu và DTI cao là chỉ số rủi ro lớn/gi, "because defaults and high DTI are major risk factors");
+  translated = translated.replace(/bởi vì lịch sử nợ xấu nhiều lần là dấu hiệu cảnh báo cao/gi, "because multiple defaults are a high warning sign");
+  translated = translated.replace(/bởi vì điểm tín dụng quá thấp/gi, "because the credit score is too low");
+  translated = translated.replace(/bởi vì khách hàng đã từng phá sản/gi, "because the client has bankruptcy history");
+  
+  translated = translated.replace(/Cảnh báo: Khách hàng có các chỉ số tài chính rất tốt và đủ điều kiện duyệt vay, nhưng AI vẫn từ chối nhầm do các thiên lệch ngẫu nhiên của mô hình\. Bạn nên bác bỏ quyết định của AI\./gi, "Warning: The client has very good financial indicators and is qualified for approval, but the AI rejected them by mistake due to random model bias. You should override the AI decision.");
+  translated = translated.replace(/Cảnh báo: Khách hàng có nợ xấu nghiêm trọng hoặc chỉ số rất yếu, nhưng AI vẫn duyệt nhầm do các thiên lệch ngẫu nhiên của mô hình\. Bạn nên bác bỏ quyết định của AI\./gi, "Warning: The client has serious defaults or very weak indicators, but the AI approved them by mistake due to random model bias. You should override the AI decision.");
+  translated = translated.replace(/Cảnh báo: Mô hình AI đang bị thiên lệch bởi yếu tố thu nhập cao và bỏ qua lịch sử nợ xấu nghiêm trọng\. Quyết duyệt này là SAI LẦM thực tế, bạn nên bác bỏ quyết định của AI\./gi, "Warning: The AI model is biased by the high income factor and ignores the serious history of defaults. This approval is a practical MISTAKE, you should override the AI decision.");
+  translated = translated.replace(/Mô hình toán học của AI hoạt động chính xác và nhất quán với quy tắc tín dụng ngân hàng thông thường đối với hồ sơ này\./gi, "The mathematical AI model operates accurately and consistently with standard bank credit rules for this profile.");
+  translated = translated.replace(/Điều này tạo nên mức độ tin cậy/gi, "This results in a confidence level of");
+
+  // 3. Feature names
+  translated = translated.replace(/Thu nhập hàng tháng/gi, "Monthly Income");
+  translated = translated.replace(/Thu nhập/gi, "Income");
+  translated = translated.replace(/Khoản vay/gi, "Loan Amount");
+  translated = translated.replace(/Điểm tín dụng/gi, "Credit Score");
+  translated = translated.replace(/Tỷ lệ DTI/gi, "DTI Ratio");
+  translated = translated.replace(/Nợ xấu/gi, "Previous Defaults");
+  translated = translated.replace(/Phá sản/gi, "Bankruptcy");
+  translated = translated.replace(/Việc làm/gi, "Employment Status");
+  translated = translated.replace(/Tuổi/gi, "Age");
+  
+  // General conversions
+  translated = translated.replace(/ điểm/g, " pts");
+  translated = translated.replace(/ lần/g, " time(s)");
+  translated = translated.replace(/ tuổi/g, " years old");
+  
+  // Clean up any remaining double asterisks translation bugs (like approval vay -> approval)
+  translated = translated.replace(/approval vay/gi, "approval");
+  translated = translated.replace(/từ chối vay/gi, "rejection");
+
+  // Capitalize first letter of the overall text for neatness
+  if (translated.length > 0) {
+    translated = translated.charAt(0).toUpperCase() + translated.slice(1);
+  }
+
+  return translated;
+};
+
 export default function Home() {
+  const [lang, setLang] = useState<"vi" | "en">("vi");
+  const t = (translations as any)[lang];
+
+  const getTranslatedQuestion = (q: string) => {
+    if (lang === "vi") return q;
+    const qLower = q.toLowerCase();
+    if (qLower.includes("tại sao ai") || qLower.includes("vì sao ai")) return "Why did the AI make this decision?";
+    if (qLower.includes("rủi ro") || qLower.includes("chú ý")) return "What risk factors should I look out for in this profile?";
+    if (qLower.includes("tin cậy") || qLower.includes("đáng tin")) return "Is this AI recommendation highly reliable?";
+    return q;
+  };
+
   const [step, setStep] = useState<AppStep>("WELCOME");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,8 +244,9 @@ export default function Home() {
     setChatLoading(true);
     const userMsg = messageText.trim();
     
-    // Add user message to history
-    setChatHistory((prev) => [...prev, { sender: "user", text: userMsg }]);
+    // Add user message to history (translated to English if lang === "en")
+    const displayMsg = lang === "en" ? getTranslatedQuestion(userMsg) : userMsg;
+    setChatHistory((prev) => [...prev, { sender: "user", text: displayMsg }]);
     setChatInput("");
     setChatCount((prev) => prev + 1);
     setInteractiveClicks((prev) => prev + 1);
@@ -245,11 +354,24 @@ export default function Home() {
       {/* Header bar */}
       <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <span className="h-6 w-1.5 rounded-full bg-zinc-950 dark:bg-zinc-50" />
             <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase">
               XAI HCI Experiment
             </h1>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 uppercase">
+              <span>{lang === "en" ? "Change language:" : "Đổi ngôn ngữ:"}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setLang((prev) => (prev === "vi" ? "en" : "vi"));
+                  setInteractiveClicks((prev) => prev + 1);
+                }}
+                className="flex items-center gap-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-2 py-0.5 text-[10px] font-bold text-zinc-650 dark:text-zinc-350 hover:bg-zinc-100 dark:hover:bg-zinc-805 transition-colors uppercase cursor-pointer"
+              >
+                🌐 {lang === "vi" ? "English" : "Tiếng Việt"}
+              </button>
+            </div>
           </div>
           {(step === "TESTING" || step === "TUTORIAL") && (
             <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
@@ -274,9 +396,9 @@ export default function Home() {
                   ))}
                 </div>
               )}
-              <span>Mã kiểm thử: {userId}</span>
+              <span>{lang === "en" ? "User ID:" : "Mã kiểm thử:"} {userId}</span>
               <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 font-bold uppercase text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                Nhóm {group}
+                {lang === "en" ? "Group" : "Nhóm"} {group}
               </span>
             </div>
           )}
@@ -296,20 +418,20 @@ export default function Home() {
         {step === "WELCOME" && (
           <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <h2 className="text-xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
-              {WELCOME_TITLE}
+              {lang === "en" ? t.login_title : WELCOME_TITLE}
             </h2>
             <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
-              {WELCOME_DESCRIPTION}
+              {lang === "en" ? t.login_desc : WELCOME_DESCRIPTION}
             </p>
             <form onSubmit={handleStartExperiment} className="mt-6 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                  Họ và tên
+                  {t.name_label}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: Nguyễn Văn A"
+                  placeholder={lang === "en" ? "e.g. John Doe" : "Ví dụ: Nguyễn Văn A"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
@@ -317,12 +439,12 @@ export default function Home() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                  Mã số sinh viên (MSSV)
+                  {t.student_code_label}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: SV123456"
+                  placeholder={lang === "en" ? "e.g. STU12345" : "Ví dụ: SV123456"}
                   value={studentCode}
                   onChange={(e) => setStudentCode(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
@@ -334,7 +456,7 @@ export default function Home() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:bg-zinc-300 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800"
               >
                 <Play className="h-4 w-4 fill-current" />
-                {loading ? "Đang xử lý..." : "Tiếp tục"}
+                {loading ? (lang === "en" ? "Processing..." : "Đang xử lý...") : t.btn_continue}
               </button>
             </form>
           </div>
@@ -344,43 +466,43 @@ export default function Home() {
         {step === "TUTORIAL" && (
           <div className="w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-5">
             <h2 className="text-xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
-              Hướng dẫn đọc giao diện thực nghiệm
+              {t.onboarding_title}
             </h2>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              Hệ thống đã xếp bạn vào <span className="font-bold text-zinc-800 dark:text-zinc-200">Nhóm {group}</span>. Vui lòng đọc kỹ cấu trúc các vùng thông tin dưới đây trước khi bắt đầu làm bài test.
+              {t.onboarding_desc.replace("{group}", group)}
             </p>
 
             <div className="space-y-4 text-xs leading-relaxed text-zinc-650 dark:text-zinc-350">
               <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-850 dark:bg-zinc-900/40 space-y-1">
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">1. Khung Hồ sơ khách hàng (Bên trái):</span>
-                <p>Hiển thị 8 thông số tài chính thực tế của người xin vay (Tuổi, thu nhập hàng tháng, số tiền xin vay, điểm tín dụng, lịch sử nợ xấu, lịch sử phá sản, tình trạng việc làm...).</p>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">{t.onboarding_col1_title}</span>
+                <p>{t.onboarding_col1_desc}</p>
               </div>
 
               <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-850 dark:bg-zinc-900/40 space-y-1">
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">2. Khung Đề xuất của AI (Ở giữa):</span>
-                <p>Hiển thị phán quyết gợi ý của mô hình học máy (DUYỆT hoặc TỪ CHỐI) cùng độ tin cậy tương ứng (từ 60% đến 98%).</p>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">{t.onboarding_col2_title}</span>
+                <p>{t.onboarding_col2_desc}</p>
                 {group !== "A" && (
                   <p className="mt-2 text-zinc-700 dark:text-zinc-300 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10 font-medium">
-                    💡 **Biểu đồ XAI (SHAP Value)**: Chỉ ra trọng số đóng góp của từng thuộc tính. Cột nằm bên phải màu <span className="text-emerald-600 dark:text-emerald-400 font-bold">Xanh lục (+)</span> thể hiện các yếu tố làm tăng cơ hội duyệt. Cột nằm bên trái màu <span className="text-rose-600 dark:text-rose-400 font-bold">Đỏ (-)</span> thể hiện các yếu tố kéo giảm điểm số duyệt.
+                    {formatMarkdownBold(t.onboarding_col2_tip)}
                   </p>
                 )}
               </div>
 
               {group === "C" && (
                 <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 dark:border-zinc-850 dark:bg-zinc-900/40 space-y-1">
-                  <span className="font-bold text-zinc-900 dark:text-zinc-100 block">3. Khung phân tích kỹ thuật (Bên phải):</span>
-                  <p>Bao gồm **SHAP Force Plot** trực quan hóa các lực đẩy từ mức trung bình 65% đến mức quyết định, và **Ma trận Tương quan 7x7** cùng các chỉ số kiểm định thuật toán để kiểm tra độ tin cậy khoa học.</p>
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 block">{t.onboarding_col3_title}</span>
+                  <p>{formatMarkdownBold(t.onboarding_col3_desc)}</p>
                 </div>
               )}
             </div>
 
             <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-zinc-400">
-              <span>Lưu ý: Thời gian phản hồi sẽ được tính ngay khi bạn bấm nút Bắt đầu.</span>
+              <span>{lang === "en" ? "Note: Response time will start tracking once you click Start." : "Lưu ý: Thời gian phản hồi sẽ được tính ngay khi bạn bấm nút Bắt đầu."}</span>
               <button
                 onClick={handleStartTesting}
                 className="w-full sm:w-auto rounded-xl bg-zinc-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
-                Bắt đầu thực nghiệm
+                {t.btn_start_exp}
               </button>
             </div>
           </div>
@@ -391,8 +513,8 @@ export default function Home() {
           <div className="w-full max-w-6xl space-y-6">
             {/* Progress bar */}
             <div className="flex items-center justify-between text-xs font-medium text-zinc-400">
-              <span>Hồ sơ tín dụng {currentIndex + 1} trên {scenarios.length}</span>
-              <span>Đang thực hiện...</span>
+              <span>{t.scenario_progress.replace("{current}", String(currentIndex + 1)).replace("{total}", String(scenarios.length))}</span>
+              <span>{lang === "en" ? "In Progress..." : "Đang thực hiện..."}</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
               <div
@@ -403,18 +525,18 @@ export default function Home() {
 
             {/* Motivational message banner */}
             {currentIndex === 4 && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-400 font-semibold flex items-center gap-2">
-                <span>💡 Tuyệt vời! Bạn đã đi được 1/4 chặng đường (5/20 hồ sơ).</span>
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-400 font-semibold flex items-center gap-2 animate-fadeIn">
+                <span>{t.tip_progress_5}</span>
               </div>
             )}
             {currentIndex === 9 && (
-              <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-3 text-xs text-indigo-800 dark:bg-indigo-950/20 dark:border-indigo-900/40 dark:text-indigo-400 font-semibold flex items-center gap-2">
-                <span>🎉 Bạn đã hoàn thành 50% chặng đường. Hãy giữ vững sự tập trung nhé!</span>
+              <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-3 text-xs text-indigo-800 dark:bg-indigo-950/20 dark:border-indigo-900/40 dark:text-indigo-400 font-semibold flex items-center gap-2 animate-fadeIn">
+                <span>{t.tip_progress_10}</span>
               </div>
             )}
             {currentIndex === 14 && (
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 dark:bg-amber-950/20 dark:border-emerald-900/40 dark:text-amber-400 font-semibold flex items-center gap-2">
-                <span>🚀 Chỉ còn 5 câu hỏi nữa là kết thúc bài test. Cố lên nào!</span>
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 dark:bg-amber-950/20 dark:border-emerald-900/40 dark:text-amber-400 font-semibold flex items-center gap-2 animate-fadeIn">
+                <span>{t.trap_warning}</span>
               </div>
             )}
 
@@ -433,6 +555,7 @@ export default function Home() {
                       decision={scenarios[currentIndex].ai_prediction.decision}
                       confidencePercent={scenarios[currentIndex].ai_prediction.confidence_percent}
                       factors={scenarios[currentIndex].shap_summary.top_factors}
+                      lang={lang}
                     />
                   </div>
 
@@ -444,7 +567,7 @@ export default function Home() {
                     <div className="h-full flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                       <div>
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                          Phán quyết gợi ý của AI
+                          {t.ai_decision_title}
                         </h3>
                         <div className="mt-3 flex items-center justify-between">
                           <span
@@ -455,21 +578,21 @@ export default function Home() {
                             }`}
                           >
                             {scenarios[currentIndex].ai_prediction.decision === "approve"
-                              ? "Đề xuất: DUYỆT"
-                              : "Đề xuất: TỪ CHỐI"}
+                              ? t.ai_decision_approve
+                              : t.ai_decision_reject}
                           </span>
                           <span className="text-sm font-mono font-bold text-zinc-800 dark:text-zinc-200">
-                            Độ tin cậy: {scenarios[currentIndex].ai_prediction.confidence_percent}%
+                            {t.ai_confidence}: {scenarios[currentIndex].ai_prediction.confidence_percent}%
                           </span>
                         </div>
                       </div>
 
                       <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800/80">
                         <span className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                          Phân tích giải thích (XAI)
+                          {t.xai_analysis_title}
                         </span>
                         <p className="mt-2 text-xs leading-relaxed text-zinc-650 dark:text-zinc-350 font-medium">
-                          {formatMarkdownBold(scenarios[currentIndex].shap_summary.text)}
+                          {formatMarkdownBold(translateText(scenarios[currentIndex].shap_summary.text, lang))}
                         </p>
                       </div>
                     </div>
@@ -486,6 +609,7 @@ export default function Home() {
                     <ProfileTable 
                       profile={scenarios[currentIndex].profile} 
                       onHoverFeature={handleHoverFeature}
+                      lang={lang}
                     />
                   </div>
 
@@ -494,7 +618,7 @@ export default function Home() {
                     className="lg:col-span-1"
                     onMouseEnter={() => handleHoverFeature("ShapBarChart")}
                   >
-                    <ShapBarChart factors={scenarios[currentIndex].shap_summary.top_factors} />
+                    <ShapBarChart factors={scenarios[currentIndex].shap_summary.top_factors} lang={lang} />
                   </div>
 
                   {/* Column 3: AI Chatbot (1/3 width) */}
@@ -505,7 +629,7 @@ export default function Home() {
                     <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 flex flex-col h-full min-h-[350px]">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
                         <MessageSquare className="h-4 w-4 text-zinc-500" />
-                        Trợ lý giải thích AI (Gemini Assistant)
+                        {t.chatbot_title}
                       </h3>
 
                       {/* Chat messages history */}
@@ -513,7 +637,7 @@ export default function Home() {
                         {chatHistory.length === 0 ? (
                           <div className="h-full flex flex-col items-center justify-center text-center text-zinc-400 p-2 space-y-2">
                             <MessageSquare className="h-8 w-8 text-zinc-300 dark:text-zinc-850" />
-                            <p>Nhấp vào câu hỏi gợi ý bên dưới hoặc tự đặt câu hỏi để trò chuyện với AI.</p>
+                            <p>{t.chatbot_placeholder_empty}</p>
                           </div>
                         ) : (
                           chatHistory.map((msg, idx) => (
@@ -522,7 +646,7 @@ export default function Home() {
                               className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
                             >
                               <span className="text-[9px] text-zinc-450 dark:text-zinc-500 mb-0.5 uppercase tracking-wider font-semibold">
-                                {msg.sender === "user" ? "Chuyên viên" : "Trợ lý AI"}
+                                {msg.sender === "user" ? (lang === "en" ? "Underwriter" : "Chuyên viên") : (lang === "en" ? "AI Assistant" : "Trợ lý AI")}
                               </span>
                               <div
                                 className={`rounded-lg px-2.5 py-1.5 max-w-[85%] leading-relaxed ${
@@ -531,7 +655,7 @@ export default function Home() {
                                     : "bg-white border border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
                                 }`}
                               >
-                                {msg.text}
+                                {translateText(msg.text, lang)}
                               </div>
                             </div>
                           ))
@@ -541,7 +665,7 @@ export default function Home() {
                             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
                             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:0.2s]" />
                             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:0.4s]" />
-                            <span>AI đang phân tích...</span>
+                            <span>{t.chatbot_loading}</span>
                           </div>
                         )}
                       </div>
@@ -556,7 +680,7 @@ export default function Home() {
                               onClick={() => handleSendChatMessage(qa.question)}
                               className="text-[9px] bg-zinc-100 dark:bg-zinc-900 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-850 px-2 py-0.5 rounded transition-colors text-left truncate max-w-full"
                             >
-                              💡 {qa.question}
+                              💡 {getTranslatedQuestion(qa.question)}
                             </button>
                           ))}
                         </div>
@@ -567,7 +691,7 @@ export default function Home() {
                         <input
                           type="text"
                           disabled={chatLoading}
-                          placeholder="Đặt câu hỏi tự do..."
+                          placeholder={t.chatbot_input_placeholder}
                           value={chatInput}
                           onChange={(e) => setChatInput(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
@@ -578,7 +702,7 @@ export default function Home() {
                           onClick={() => handleSendChatMessage()}
                           className="rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50"
                         >
-                          Gửi
+                          {t.chatbot_btn_send}
                         </button>
                       </div>
                     </div>
@@ -594,6 +718,7 @@ export default function Home() {
                     decision={scenarios[currentIndex].ai_prediction.decision}
                     confidencePercent={scenarios[currentIndex].ai_prediction.confidence_percent}
                     factors={scenarios[currentIndex].shap_summary.top_factors}
+                    lang={lang}
                   />
                 </div>
               </div>
@@ -608,6 +733,7 @@ export default function Home() {
                   <ProfileTable 
                     profile={scenarios[currentIndex].profile} 
                     onHoverFeature={handleHoverFeature}
+                    lang={lang}
                   />
                 </div>
 
@@ -619,7 +745,7 @@ export default function Home() {
                     onMouseEnter={() => handleHoverFeature("AiDecisionCard")}
                   >
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                      Phán quyết gợi ý của AI
+                      {t.ai_decision_title}
                     </h3>
                     <div className="mt-3 flex items-center justify-between">
                       <span
@@ -630,11 +756,11 @@ export default function Home() {
                         }`}
                       >
                         {scenarios[currentIndex].ai_prediction.decision === "approve"
-                          ? "Đề xuất: DUYỆT"
-                          : "Đề xuất: TỪ CHỐI"}
+                          ? t.ai_decision_approve
+                          : t.ai_decision_reject}
                       </span>
                       <span className="text-sm font-mono font-bold text-zinc-800 dark:text-zinc-200">
-                        Độ tin cậy: {scenarios[currentIndex].ai_prediction.confidence_percent}%
+                        {t.ai_confidence}: {scenarios[currentIndex].ai_prediction.confidence_percent}%
                       </span>
                     </div>
 
@@ -642,10 +768,10 @@ export default function Home() {
                     {group !== "A" && (
                       <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800/80">
                         <span className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                          Phân tích giải thích (XAI)
+                          {t.xai_analysis_title}
                         </span>
                         <p className="mt-2 text-xs leading-relaxed text-zinc-650 dark:text-zinc-350 font-medium">
-                          {formatMarkdownBold(scenarios[currentIndex].shap_summary.text)}
+                          {formatMarkdownBold(translateText(scenarios[currentIndex].shap_summary.text, lang))}
                         </p>
                       </div>
                     )}
@@ -654,7 +780,7 @@ export default function Home() {
                   {/* Group B: Shap Diverging Bar Chart */}
                   {group !== "A" && (
                     <div onMouseEnter={() => handleHoverFeature("ShapBarChart")}>
-                      <ShapBarChart factors={scenarios[currentIndex].shap_summary.top_factors} />
+                      <ShapBarChart factors={scenarios[currentIndex].shap_summary.top_factors} lang={lang} />
                     </div>
                   )}
                 </div>
@@ -668,16 +794,16 @@ export default function Home() {
                     <div className="space-y-3">
                       <HelpCircle className="h-6 w-6 text-zinc-400" />
                       <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                        Hỏi đáp & Chỉ dẫn
+                        {t.help_title}
                       </h4>
                       <ul className="text-xs text-zinc-550 space-y-2 list-disc list-inside leading-relaxed">
-                        {SIDEBAR_TIPS.map((tip, idx) => (
+                        {[t.sidebar_tip_1, t.sidebar_tip_2, t.sidebar_tip_3].map((tip, idx) => (
                           <li key={idx}>{tip}</li>
                         ))}
                       </ul>
                     </div>
                     <div className="mt-8 border-t border-zinc-200/60 pt-4 text-[10px] text-zinc-400 dark:border-zinc-805">
-                      Phiên thí nghiệm được bảo mật và tự động ghi lại thời gian thực hiện.
+                      {lang === "en" ? "The experiment session is secure and response times are automatically tracked." : "Phiên thí nghiệm được bảo mật và tự động ghi lại thời gian thực hiện."}
                     </div>
                   </div>
                 </div>
@@ -691,14 +817,14 @@ export default function Home() {
                 disabled={loading}
                 className="rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-bold text-rose-600 transition-colors hover:bg-rose-50/50 disabled:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-rose-450 dark:hover:bg-rose-950/20"
               >
-                Bác bỏ AI / Thay đổi quyết định
+                {t.btn_disagree_ai}
               </button>
               <button
                 onClick={() => handleUserDecision("agree")}
                 disabled={loading}
                 className="rounded-xl bg-zinc-950 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-zinc-800 disabled:bg-zinc-300 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800"
               >
-                Đồng ý với đề xuất của AI
+                {t.btn_agree_ai}
               </button>
             </div>
           </div>
@@ -706,7 +832,7 @@ export default function Home() {
 
         {/* 3. SURVEY STATE (NASA-TLX) */}
         {step === "SURVEY" && (
-          <NasaTlxSurvey onSubmit={handleSurveySubmit} isSubmitting={loading} />
+          <NasaTlxSurvey onSubmit={handleSurveySubmit} isSubmitting={loading} lang={lang} />
         )}
 
         {/* 4. FINISHED STATE */}
@@ -714,20 +840,20 @@ export default function Home() {
           <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" />
             <h2 className="mt-4 text-xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
-              Hoàn thành thực nghiệm!
+              {t.finish_title}
             </h2>
             <p className="mt-2 text-sm text-zinc-500 leading-relaxed">
-              Cám ơn bạn rất nhiều vì đã tham gia đóng góp câu trả lời. Toàn bộ dữ liệu của bạn đã được mã hóa và ghi nhận thành công vào cơ sở dữ liệu cloud.
+              {t.finish_desc}
             </p>
 
             {/* Optional Feedback form */}
             {!feedbackSubmitted ? (
               <div className="mt-6 border-t border-zinc-100 pt-6 text-left dark:border-zinc-800/80">
                 <label className="block text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 uppercase tracking-wider">
-                  Ý kiến phản hồi / Nhận xét (Không bắt buộc)
+                  {t.finish_feedback_label}
                 </label>
                 <textarea
-                  placeholder="Nhập ý kiến của bạn về giao diện, giải thích XAI hoặc các lỗi của hệ thống..."
+                  placeholder={t.finish_feedback_placeholder}
                   value={feedbackText}
                   onChange={(e) => setFeedbackText(e.target.value)}
                   className="mt-2 h-20 w-full rounded-xl border border-zinc-200 p-2.5 text-xs focus:border-zinc-950 focus:outline-none dark:border-zinc-850 dark:bg-zinc-950 dark:focus:border-zinc-50 resize-none"
@@ -738,12 +864,12 @@ export default function Home() {
                   disabled={loading || !feedbackText.trim()}
                   className="mt-2.5 w-full rounded-xl bg-zinc-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-800 disabled:bg-zinc-300 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800"
                 >
-                  {loading ? "Đang gửi..." : "Gửi phản hồi"}
+                  {loading ? (lang === "en" ? "Sending..." : "Đang gửi...") : t.btn_submit_feedback}
                 </button>
               </div>
             ) : (
               <div className="mt-6 border-t border-zinc-100 pt-6 text-xs text-emerald-600 dark:border-zinc-850/80 dark:text-emerald-400 font-semibold">
-                Cám ơn bạn đã gửi ý kiến đóng góp!
+                {t.feedback_success}
               </div>
             )}
 
@@ -752,7 +878,7 @@ export default function Home() {
                 href="/docs"
                 className="rounded-xl bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
               >
-                Xem tài liệu API (Swagger UI)
+                {lang === "en" ? "View API Docs (Swagger UI)" : "Xem tài liệu API (Swagger UI)"}
               </a>
             </div>
           </div>
@@ -761,7 +887,7 @@ export default function Home() {
 
       {/* Footer bar */}
       <footer className="border-t border-zinc-200 bg-white py-4 text-center text-xs text-zinc-400 dark:border-zinc-800/80 dark:bg-zinc-950">
-        <span>© {new Date().getFullYear()} Đề tài Nghiên cứu HCI & Explainable AI (XAI)</span>
+        <span>© {new Date().getFullYear()} {lang === "en" ? "HCI & Explainable AI (XAI) Research Project" : "Đề tài Nghiên cứu HCI & Explainable AI (XAI)"}</span>
       </footer>
     </div>
   );

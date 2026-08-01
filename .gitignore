@@ -67,3 +67,5 @@ __pycache__/
 .idea/
 skills-lock.json
 
+# local db
+local_db.json

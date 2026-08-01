@@ -1,4 +1,5 @@
 import React from "react";
+import translations from "@/data/translations.json";
 
 interface MathMatrixViewProps {
   decision: "approve" | "reject";
@@ -8,13 +9,17 @@ interface MathMatrixViewProps {
     impact: number;
     direction: "positive" | "negative";
   }>;
+  lang?: "vi" | "en";
 }
 
 export default function MathMatrixView({
   decision,
   confidencePercent,
   factors,
+  lang = "vi",
 }: MathMatrixViewProps) {
+  const t = (translations as any)[lang];
+
   // Compute logit based on output probability
   const p = decision === "approve" ? confidencePercent / 100 : 1 - confidencePercent / 100;
   const logit = p > 0 && p < 1 ? Math.log(p / (1 - p)).toFixed(4) : "0.0000";
@@ -45,10 +50,10 @@ export default function MathMatrixView({
     <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 space-y-6">
       <div>
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Chỉ số Toán học & Thuật toán Ra quyết định (Logistic / Sigmoid / Logit)
+          {lang === "en" ? "Decision Mathematics & Algorithm Parameters (Logistic / Sigmoid / Logit)" : "Chỉ số Toán học & Thuật toán Ra quyết định (Logistic / Sigmoid / Logit)"}
         </h3>
         <p className="text-[11px] text-zinc-400 mt-0.5">
-          Breakdown chi tiết các thông số toán học của mô hình học máy.
+          {lang === "en" ? "Mathematical details and decision parameters of the machine learning model." : "Breakdown chi tiết các thông số toán học của mô hình học máy."}
         </p>
       </div>
 
@@ -67,9 +72,10 @@ export default function MathMatrixView({
           </div>
         </div>
         <div className="pt-1.5 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex justify-between">
-          <span>Ngưỡng phân loại (&tau;): 0.5000</span>
+          <span>{lang === "en" ? "Classification Threshold (τ): 0.5000" : "Ngưỡng phân loại (τ): 0.5000"}</span>
           <span className="font-bold text-zinc-900 dark:text-zinc-100">
-            Trạng thái: P &ge; &tau; &rarr; {p >= 0.5 ? "DUYỆT" : "TỪ CHỐI"}
+            {lang === "en" ? "Status: P ≥ τ → " : "Trạng thái: P ≥ τ → "}
+            {p >= 0.5 ? (lang === "en" ? "APPROVE" : "DUYỆT") : (lang === "en" ? "REJECT" : "TỪ CHỐI")}
           </span>
         </div>
       </div>
@@ -77,7 +83,7 @@ export default function MathMatrixView({
       {/* Pearson Correlation Matrix */}
       <div>
         <span className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-          Ma trận tương quan Pearson (7x7 Feature Correlation)
+          {lang === "en" ? "Pearson Correlation Matrix (7x7 Feature Correlation)" : "Ma trận tương quan Pearson (7x7 Feature Correlation)"}
         </span>
         <div className="overflow-x-auto rounded-lg border border-zinc-100 dark:border-zinc-900">
           <table className="w-full text-center font-mono text-[9px]">
@@ -109,7 +115,7 @@ export default function MathMatrixView({
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-lg border border-zinc-100 bg-zinc-50/30 p-3 dark:border-zinc-900 dark:bg-zinc-900/10 space-y-1.5 font-mono text-[10px]">
           <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-            Model Metrics
+            {lang === "en" ? "Model Metrics" : "Chỉ số đánh giá mô hình"}
           </span>
           <div className="flex justify-between">
             <span>ROC-AUC:</span>
@@ -131,7 +137,7 @@ export default function MathMatrixView({
 
         <div className="rounded-lg border border-zinc-100 bg-zinc-50/30 p-3 dark:border-zinc-900 dark:bg-zinc-900/10 space-y-1.5 font-mono text-[10px]">
           <span className="block text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-            Confidence Intervals
+            {lang === "en" ? "Confidence Intervals" : "Khoảng tin cậy"}
           </span>
           <div className="flex justify-between">
             <span>KS Statistic:</span>
