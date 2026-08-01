@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey || apiKey.startsWith("AIzaSyCrY_placeholder") || apiKey === "AIzaSyCrY_nGo11NFI5DEk6MNW7PyVgWatGbdtc") {
+    if (!apiKey || apiKey.startsWith("AIzaSyCrY_placeholder")) {
       // 🌟 FALLBACK: If GEMINI_API_KEY is not set or is the placeholder key, fallback to local Q&A matching
       console.warn("⚠️ GEMINI_API_KEY is placeholder or not configured. Falling back to rule-based Q&A matching.");
       return NextResponse.json({
