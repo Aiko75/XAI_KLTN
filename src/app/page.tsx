@@ -22,6 +22,7 @@ import ShapBarChart from "@/components/experiment/ShapBarChart";
 import ShapForcePlot from "@/components/experiment/ShapForcePlot";
 import MathMatrixView from "@/components/experiment/MathMatrixView";
 import NasaTlxSurvey from "@/components/experiment/NasaTlxSurvey";
+import { predictLoanApproval } from "@/lib/rfPredictor";
 
 const formatMarkdownBold = (text: string) => {
   if (!text) return "";
@@ -154,6 +155,8 @@ export default function Home() {
   // User State
   const [name, setName] = useState<string>("");
   const [studentCode, setStudentCode] = useState<string>("");
+  const [major, setMajor] = useState<string>("");
+  const [aiFrequency, setAiFrequency] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
   const [group, setGroup] = useState<"A" | "B" | "C">("A");
 
@@ -191,10 +194,50 @@ export default function Home() {
       });
   }, []);
 
+  // What-If Simulation State
+  const [simProfile, setSimProfile] = useState<{
+    Age: number;
+    MonthlyIncome: number;
+    LoanAmount: number;
+    CreditScore: number;
+    TotalDebtToIncomeRatio: number;
+    PreviousLoanDefaults: number;
+    BankruptcyHistory: number;
+    EmploymentStatus: string;
+  } | null>(null);
+
+  // Sync simProfile with scenarios[currentIndex] on load or scenario index change
+  useEffect(() => {
+    if (scenarios.length > 0 && scenarios[currentIndex]) {
+      const p = scenarios[currentIndex].profile;
+      setSimProfile({
+        Age: p.Age,
+        MonthlyIncome: p.MonthlyIncome,
+        LoanAmount: p.LoanAmount,
+        CreditScore: p.CreditScore,
+        TotalDebtToIncomeRatio: p.TotalDebtToIncomeRatio,
+        PreviousLoanDefaults: p.PreviousLoanDefaults,
+        BankruptcyHistory: p.BankruptcyHistory,
+        EmploymentStatus: p.EmploymentStatus
+      });
+    }
+  }, [currentIndex, scenarios]);
+
+  const handleSimChange = (key: string, value: any) => {
+    setSimProfile((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [key]: value
+      };
+    });
+    setInteractiveClicks((prev) => prev + 1);
+  };
+
   const handleStartExperiment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !studentCode.trim()) {
-      setError("Vui lòng điền đầy đủ Họ tên và Mã số sinh viên.");
+    if (!name.trim() || !studentCode.trim() || !major || !aiFrequency) {
+      setError(lang === "en" ? "Please fill in all information fields." : "Vui lòng điền đầy đủ toàn bộ thông tin yêu cầu.");
       return;
     }
 
@@ -202,7 +245,7 @@ export default function Home() {
     setError(null);
 
     try {
-      const userRes = await startUser(name.trim(), studentCode.trim());
+      const userRes = await startUser(name.trim(), studentCode.trim(), major, aiFrequency);
       setUserId(userRes.user_id);
       setGroup(userRes.group_assigned);
       setCurrentIndex(0);
@@ -449,6 +492,43 @@ export default function Home() {
                   onChange={(e) => setStudentCode(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
                 />
+              </div>
+
+              {/* Major of Study */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t.major_label}
+                </label>
+                <select
+                  required
+                  value={major}
+                  onChange={(e) => setMajor(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                >
+                  <option value="" disabled className="text-zinc-400 dark:bg-zinc-950">{t.major_placeholder}</option>
+                  <option value="CNTT" className="dark:bg-zinc-950">{t.major_cs}</option>
+                  <option value="Kinh tế" className="dark:bg-zinc-950">{t.major_biz}</option>
+                  <option value="Khác" className="dark:bg-zinc-950">{t.major_other}</option>
+                </select>
+              </div>
+
+              {/* AI Frequency */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t.ai_frequency_label}
+                </label>
+                <select
+                  required
+                  value={aiFrequency}
+                  onChange={(e) => setAiFrequency(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                >
+                  <option value="" disabled className="text-zinc-400 dark:bg-zinc-950">{t.ai_frequency_placeholder}</option>
+                  <option value="Hiếm khi" className="dark:bg-zinc-950">{t.ai_freq_never}</option>
+                  <option value="Thỉnh thoảng" className="dark:bg-zinc-950">{t.ai_freq_occasional}</option>
+                  <option value="Thường xuyên" className="dark:bg-zinc-950">{t.ai_freq_weekly}</option>
+                  <option value="Hàng ngày" className="dark:bg-zinc-950">{t.ai_freq_daily}</option>
+                </select>
               </div>
               <button
                 type="submit"
@@ -708,6 +788,224 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                {/* Row 2.5: What-If Interactive Simulation (Counterfactual) */}
+                {simProfile && (
+                  <div 
+                    className="w-full"
+                    onMouseEnter={() => handleHoverFeature("WhatIfPanel")}
+                  >
+                    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-zinc-150 pb-3 dark:border-zinc-800/80 gap-3">
+                        <div>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            {t.whatif_title}
+                          </h3>
+                          <p className="mt-1 text-[11px] text-zinc-500">
+                            {t.whatif_desc}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const p = scenarios[currentIndex].profile;
+                            setSimProfile({
+                              Age: p.Age,
+                              MonthlyIncome: p.MonthlyIncome,
+                              LoanAmount: p.LoanAmount,
+                              CreditScore: p.CreditScore,
+                              TotalDebtToIncomeRatio: p.TotalDebtToIncomeRatio,
+                              PreviousLoanDefaults: p.PreviousLoanDefaults,
+                              BankruptcyHistory: p.BankruptcyHistory,
+                              EmploymentStatus: p.EmploymentStatus
+                            });
+                            setInteractiveClicks((prev) => prev + 1);
+                          }}
+                          className="rounded-lg border border-zinc-250 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 px-3 py-1.5 text-xs font-bold text-zinc-650 dark:text-zinc-350 hover:text-zinc-850 dark:hover:text-white transition-colors uppercase cursor-pointer"
+                        >
+                          {t.whatif_btn_reset}
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                        {/* Left: Inputs Sliders (2/3 width) */}
+                        <div className="md:col-span-2 space-y-3.5 pr-2">
+                          {/* Income Slider */}
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_MonthlyIncome}</span>
+                              <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                                {(simProfile.MonthlyIncome / 1000000).toLocaleString("vi-VN")}M {t.currency}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="10000000"
+                              max="90000000"
+                              step="1000000"
+                              value={simProfile.MonthlyIncome}
+                              onChange={(e) => handleSimChange("MonthlyIncome", parseInt(e.target.value))}
+                              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-850 accent-zinc-950 dark:accent-zinc-50"
+                            />
+                          </div>
+
+                          {/* Loan Amount Slider */}
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_LoanAmount}</span>
+                              <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                                {(simProfile.LoanAmount / 1000000).toLocaleString("vi-VN")}M {t.currency}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="50000000"
+                              max="900000000"
+                              step="10000000"
+                              value={simProfile.LoanAmount}
+                              onChange={(e) => handleSimChange("LoanAmount", parseInt(e.target.value))}
+                              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-850 accent-zinc-950 dark:accent-zinc-50"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Credit Score Slider */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_CreditScore}</span>
+                                <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                                  {simProfile.CreditScore} {t.points}
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min="300"
+                                max="850"
+                                step="1"
+                                value={simProfile.CreditScore}
+                                onChange={(e) => handleSimChange("CreditScore", parseInt(e.target.value))}
+                                className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-850 accent-zinc-950 dark:accent-zinc-50"
+                              />
+                            </div>
+
+                            {/* DTI Slider */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_TotalDebtToIncomeRatio}</span>
+                                <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                                  {Math.round(simProfile.TotalDebtToIncomeRatio * 100)}%
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                value={simProfile.TotalDebtToIncomeRatio}
+                                onChange={(e) => handleSimChange("TotalDebtToIncomeRatio", parseFloat(e.target.value))}
+                                className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-850 accent-zinc-950 dark:accent-zinc-50"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {/* Previous Defaults */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_PreviousLoanDefaults}</span>
+                                <span className="font-mono font-bold text-zinc-900 dark:text-white">{simProfile.PreviousLoanDefaults} {t.times}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                step="1"
+                                value={simProfile.PreviousLoanDefaults}
+                                onChange={(e) => handleSimChange("PreviousLoanDefaults", parseInt(e.target.value))}
+                                className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-850 accent-zinc-950 dark:accent-zinc-50"
+                              />
+                            </div>
+
+                            {/* Bankruptcy */}
+                            <div className="space-y-1">
+                              <span className="block text-xs font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_BankruptcyHistory}</span>
+                              <select
+                                value={simProfile.BankruptcyHistory}
+                                onChange={(e) => handleSimChange("BankruptcyHistory", parseInt(e.target.value))}
+                                className="w-full rounded-lg border border-zinc-200 px-2 py-1 text-xs bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                              >
+                                <option value="0" className="dark:bg-zinc-950">{t.bankruptcy_none}</option>
+                                <option value="1" className="dark:bg-zinc-950">{t.bankruptcy_yes}</option>
+                              </select>
+                            </div>
+
+                            {/* Employment */}
+                            <div className="space-y-1">
+                              <span className="block text-xs font-semibold text-zinc-650 dark:text-zinc-350">{t.feature_EmploymentStatus}</span>
+                              <select
+                                value={simProfile.EmploymentStatus}
+                                onChange={(e) => handleSimChange("EmploymentStatus", e.target.value)}
+                                className="w-full rounded-lg border border-zinc-200 px-2 py-1 text-xs bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                              >
+                                <option value="Employed" className="dark:bg-zinc-950">{t.employment_Employed}</option>
+                                <option value="Self-Employed" className="dark:bg-zinc-950">{t.employment_Self_Employed}</option>
+                                <option value="Unemployed" className="dark:bg-zinc-950">{t.employment_Unemployed}</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Results Outputs (1/3 width) */}
+                        <div className="rounded-xl border border-zinc-150 bg-zinc-50/50 p-4 dark:border-zinc-850 dark:bg-zinc-900/30 flex flex-col justify-between space-y-4">
+                          <div className="space-y-3">
+                            <div>
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                                {t.whatif_sim_rec}
+                              </span>
+                              <div className="mt-1.5 flex items-center justify-between">
+                                <span
+                                  className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+                                    predictLoanApproval(simProfile).decision === "approve"
+                                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                                      : "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400"
+                                  }`}
+                                >
+                                  {predictLoanApproval(simProfile).decision === "approve" 
+                                    ? (lang === "en" ? "APPROVE" : "DUYỆT VAY") 
+                                    : (lang === "en" ? "REJECT" : "TỪ CHỐI")}
+                                </span>
+                                <span className="text-xs font-bold text-zinc-850 dark:text-zinc-200">
+                                  {predictLoanApproval(simProfile).confidence_percent}%
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="border-t border-zinc-200/60 pt-3 dark:border-zinc-800/60 text-[10px] text-zinc-500">
+                              <span className="font-semibold block">{t.whatif_original_rec}:</span>
+                              <span className="font-bold uppercase tracking-wider block mt-1">
+                                {scenarios[currentIndex].ai_prediction.decision === "approve" 
+                                  ? (lang === "en" ? "APPROVE" : "DUYỆT VAY") 
+                                  : (lang === "en" ? "REJECT" : "TỪ CHỐI")} ({scenarios[currentIndex].ai_prediction.confidence_percent}%)
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] font-bold">
+                            {predictLoanApproval(simProfile).decision !== scenarios[currentIndex].ai_prediction.decision ? (
+                              <span className="text-amber-600 dark:text-amber-400 block animate-pulse">
+                                {t.whatif_status_changed}
+                              </span>
+                            ) : (
+                              <span className="text-emerald-600 dark:text-emerald-400 block">
+                                {t.whatif_status_same}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Row 3: Technical Details Row (Math Matrix correlations & metrics) */}
                 <div 

@@ -19,6 +19,8 @@ model User {
   end_time              DateTime?     @db.Timestamptz
   tutorial_time_seconds Float?        @db.DoublePrecision
   feedback              String?       @db.Text
+  major                 String?       @db.VarChar(100)
+  ai_frequency          String?       @db.VarChar(100)
   responses             ResponseLog[]
   surveys               SurveyLog[]
 

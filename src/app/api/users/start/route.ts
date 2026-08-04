@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const name = body.name || null;
     const studentCode = body.student_code || null;
+    const major = body.major || null;
+    const aiFrequency = body.ai_frequency || null;
 
     const groupAssigned = await chooseGroup();
     
@@ -51,6 +53,8 @@ export async function POST(req: NextRequest) {
         student_code: studentCode,
         group_assigned: groupAssigned,
         start_time: now,
+        major,
+        ai_frequency: aiFrequency,
       },
     });
 

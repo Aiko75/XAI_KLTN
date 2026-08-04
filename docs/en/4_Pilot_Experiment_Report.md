@@ -76,3 +76,25 @@ Participants self-assessed their workload after the experiment on a scale of 1 (
 #### Key Takeaways:
 *   **Group B** reported the lowest overall workload (**3.33/7**), proving that basic visual explanations provide the most supportive interface.
 *   **Group C** reported the highest temporal pressure (**4.00/7**) and frustration level (**3.00/7**), but the lowest personal effort (**3.00/7**), validating that they disengaged from active critique and defaulted to copying AI suggestions.
+
+---
+
+## 5. System Improvements for Main Study Deployment
+
+Based on the pilot observations, three key system improvements were proposed and successfully integrated:
+1.  **VND Currency Alignment**: Transitioned the financial profile parameters from foreign currencies to localized Vietnamese Dong (VND) scales, enhancing business familiarity and reducing cognitive conversion barriers.
+2.  **Sequence Shuffling**: Randomized the order of the 20 evaluation profiles (alternating and mixing approve/reject suggestions) to eliminate sequence bias.
+3.  **Group C Layout Re-Structuring**: Placed the SHAP Force Plot at the top of the interface as a primary visual indicator, positioning secondary items below to improve aesthetics and task flow.
+
+---
+
+## 6. User Segmentation for the Phase 2 Study
+
+To analyze the factors modulating **Automation Bias** and **Cognitive Load**, the second phase of data collection introduces two demographic classification variables captured on onboarding:
+
+1.  **Academic Major**: Grouping participants into **Computer Science/IT (IT)**, **Business/Economics (Business)**, and **Others**.
+    *   *Research Hypothesis*: IT students will exhibit higher skepticism towards algorithmic suggestions, resulting in lower automation bias compared to Business/Economics and Other students due to their technical understanding of the black-box model.
+2.  **AI Tools Usage Frequency**: Classifying users by their exposure frequency: **Rarely or never**, **Occasionally**, **Frequently**, and **Daily**.
+    *   *Research Hypothesis*: Users with high AI exposure will demonstrate higher fluency when interacting with the conversational AI explainer and record shorter reading times for XAI charts.
+
+The combination of the three experimental interfaces ($A, B, C$) with these user segmentation variables will supply a rich data matrix for ANOVA and Chi-Square statistical tests in the thesis results.

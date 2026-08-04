@@ -52,7 +52,40 @@ The confusion matrix displays the distribution of actual versus predicted approv
 
 ---
 
-## 4. SHAP (SHapley Additive exPlanations) Attribution
+---
+
+## 4. Multi-Model Machine Learning Benchmarking & Explainability Trade-Off
+
+To ensure a robust technical foundation, we trained and benchmarked **4 machine learning classifiers** on the same dataset:
+1.  **Logistic Regression**: A linear model providing the highest intrinsic explainability, but struggles to capture complex non-linear combinations of risk factors.
+2.  **Decision Tree (Single)**: Provides clear decision rules but is highly prone to overfitting and yields sub-optimal predictive performance.
+3.  **Random Forest**: An ensemble model combining 100 decision trees. It achieves a superior balance of high accuracy and robust explainability.
+4.  **XGBoost (Gradient Boosting)**: A state-of-the-art ensemble method that iteratively optimizes weak learners to achieve maximum predictive performance.
+
+### 4.1. Comparative Performance Metrics (Test Set)
+
+| Model | Accuracy | Precision | Recall | F1-Score |
+| :--- | :---: | :---: | :---: | :---: |
+| **Logistic Regression** | 87.55% | 79.59% | 64.44% | 71.21% |
+| **Decision Tree** | 86.95% | 74.89% | 68.31% | 71.44% |
+| **Random Forest** | **88.08%** | **80.35%** | 66.32% | **72.66%** |
+| **XGBoost** | 87.43% | 76.62% | **68.20%** | 72.16% |
+
+![Model Performance Comparison](../assets/model_comparison_en.png)
+
+*Discussion*: Random Forest yields the best overall Accuracy and F1-Score for this credit risk classification task. Logistic Regression offers highly competitive baseline performance (87.55%).
+
+### 4.2. SHAP Interpretability: Simple vs. Complex Models
+
+The trade-off between **Accuracy** and **Explainability** is highlighted when comparing their SHAP feature attributions:
+*   **Simple Model (Decision Tree)**: Attributes importances aggressively to a few key node splits (such as Previous Loan Defaults and DTI Ratio), ignoring minor but significant contributing signals.
+*   **Complex Model (XGBoost / Random Forest)**: Distributes feature importances smoothly across all 8 features, revealing the complex, multi-dimensional correlations that reflect actual credit default patterns.
+
+![SHAP Importance Comparison](../assets/shap_comparison_en.png)
+
+---
+
+## 5. SHAP (SHapley Additive exPlanations) Attribution
 
 SHAP values are calculated using cooperative game theory to measure the contribution of each feature to the model's output probability.
 *   **Base Value ($E[f(X)]$ = 65%)**: The average approval probability across the dataset.

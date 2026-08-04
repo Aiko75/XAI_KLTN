@@ -82,3 +82,16 @@ Dựa trên kết quả thử nghiệm sơ bộ, nghiên cứu đề xuất 3 h�
 1.  **Đồng nhất tiền tệ VND**: Thay đổi dữ liệu mẫu nước ngoài sang dạng Việt Nam hóa (tiền tệ VND, giới hạn lương thực tế) để tăng sự quen thuộc nghiệp vụ của sinh viên Việt Nam, giảm gánh nặng chuyển đổi tiền tệ.
 2.  **Khử thiên lệch chuỗi (Shuffling)**: Thực hiện xáo trộn ngẫu nhiên thứ tự 20 câu hỏi thay vì dồn các câu đồng ý lên đầu, đảm bảo tính khách quan trong đo lường.
 3.  **Tái cấu trúc bố cục Nhóm C**: Đưa biểu đồ Force Plot to lên hàng đầu làm điểm nhấn trực quan, đưa các thành phần phụ xuống dưới để cải thiện tính thẩm mỹ và luồng làm bài thẩm định.
+
+---
+
+## 6. Phân khúc Người dùng (User Segmentation) trong đợt thu thập dữ liệu thứ hai
+
+Để đào sâu phân tích các nhân tố ảnh hưởng tới **Thiên kiến tự động hóa (Automation Bias)** và **Tải lượng nhận thức (Cognitive Load)**, trong đợt thu thập dữ liệu thứ hai (Phase 2), hệ thống đã bổ sung thu thập hai biến độc lập phân loại ngay từ màn hình đăng nhập:
+
+1.  **Chuyên ngành học (Academic Major)**: Phân nhóm đối tượng thành **Khoa học Máy tính / CNTT (IT)**, **Khối ngành Kinh tế / Quản trị (Business)** và **Chuyên ngành Khác**. 
+    *   *Giả thuyết nghiên cứu*: Sinh viên chuyên ngành CNTT có xu hướng nghi ngờ thuật toán cao hơn và ít bị thiên kiến tự động hóa hơn so với sinh viên khối ngành Kinh tế và các ngành khác nhờ có hiểu biết kỹ thuật về bản chất hộp đen của mô hình.
+2.  **Tần suất tương tác với các công cụ AI (AI Usage Frequency)**: Phân nhóm người dùng theo 4 mức độ tần suất tiếp xúc: **Hiếm khi/Không bao giờ**, **Thỉnh thoảng**, **Khá thường xuyên**, và **Hàng ngày**.
+    *   *Giả thuyết nghiên cứu*: Người dùng tương tác thường xuyên với các công cụ AI (như ChatGPT, Gemini) sẽ có độ nhạy bén cao hơn khi tương tác với Trợ lý ảo giải thích, đồng thời thời gian đọc hiểu biểu đồ XAI của họ sẽ ngắn hơn nhóm ít tiếp xúc.
+
+Sự kết hợp giữa 3 nhóm giao diện thực nghiệm ($A, B, C$) và các biến phân khúc người dùng này sẽ cung cấp ma trận dữ liệu phong phú cho các kiểm định thống kê ANOVA và Chi-Square trong phần kết quả thực tế của luận văn.

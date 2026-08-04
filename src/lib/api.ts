@@ -48,11 +48,21 @@ export async function fetchScenarios(): Promise<Scenario[]> {
   return data.scenarios;
 }
 
-export async function startUser(name: string, studentCode: string): Promise<StartUserResponse> {
+export async function startUser(
+  name: string, 
+  studentCode: string, 
+  major: string, 
+  aiFrequency: string
+): Promise<StartUserResponse> {
   const res = await fetch("/api/users/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, student_code: studentCode }),
+    body: JSON.stringify({ 
+      name, 
+      student_code: studentCode,
+      major,
+      ai_frequency: aiFrequency
+    }),
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));

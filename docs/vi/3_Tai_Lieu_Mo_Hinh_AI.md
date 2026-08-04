@@ -59,22 +59,53 @@ Ma trận nhầm lẫn biểu thị kết quả đối chiếu giữa nhãn th�
 
 ---
 
-## 4. Cơ sở toán học của kỹ thuật giải thích SHAP
+## 4. So sánh Đa mô hình & Đánh đổi giữa Hiệu năng vs. Khả năng giải thích (Accuracy vs. Explainability Trade-off)
+
+Để nâng cao tính thuyết phục khoa học, chúng tôi tiến hành huấn luyện thử nghiệm và so sánh **4 mô hình máy học** phổ biến trên cùng tập dữ liệu:
+1.  **Logistic Regression**: Mô hình tuyến tính đơn giản, dễ giải thích nhất nhưng khó học được mối quan hệ phi tuyến phức tạp.
+2.  **Decision Tree (Cây quyết định đơn lẻ)**: Có tính giải thích cao dưới dạng các luật trực quan, nhưng dễ bị quá khớp (overfit) và hiệu năng trung bình.
+3.  **Random Forest (Rừng ngẫu nhiên)**: Mô hình ensemble (kết hợp) ổn định, cân bằng xuất sắc giữa độ chính xác và khả năng giải thích.
+4.  **XGBoost (Boosting độ dốc)**: Mô hình phức tạp nhất, tối ưu hóa bằng cách kết hợp liên tiếp các cây yếu để tăng hiệu năng tối đa.
+
+### 4.1. Bảng so sánh hiệu năng trên tập kiểm thử (Test Set)
+
+| Mô hình | Độ chính xác (Accuracy) | Độ chuẩn xác (Precision) | Độ nhạy (Recall) | F1-Score |
+| :--- | :---: | :---: | :---: | :---: |
+| **Logistic Regression** | 87.55% | 79.59% | 64.44% | 71.21% |
+| **Decision Tree** | 86.95% | 74.89% | 68.31% | 71.44% |
+| **Random Forest** | **88.08%** | **80.35%** | 66.32% | **72.66%** |
+| **XGBoost** | 87.43% | 76.62% | **68.20%** | 72.16% |
+
+![So sánh Mô hình](../assets/model_comparison.png)
+
+*Nhận xét*: Random Forest đạt hiệu năng tổng thể (Accuracy & F1-Score) tốt nhất trên tập dữ liệu này. Logistic Regression mặc dù đơn giản nhưng vẫn đạt độ chính xác khá tốt (87.55%).
+
+### 4.2. So sánh SHAP: Mô hình đơn giản vs. Mô hình phức tạp
+
+Sự đánh đổi giữa **Độ chính xác (Accuracy)** và **Khả năng giải thích (Explainability)** thể hiện rõ qua biểu đồ SHAP. 
+*   **Mô hình đơn giản (Decision Tree)**: Chỉ tập trung vào một vài thuộc tính phân chia quan trọng nhất ở các nút gốc (như Lịch sử nợ xấu và Tỷ lệ DTI). Các trọng số đóng góp SHAP phân cực mạnh và thiếu đi các đóng góp vi mô của các thuộc tính phụ trợ khác.
+*   **Mô hình phức tạp (XGBoost / Random Forest)**: Nhờ cơ chế ensemble kết hợp hàng trăm cây quyết định khác nhau, SHAP phân bổ trọng số mượt mà hơn trên toàn bộ 8 thuộc tính tài chính, phản ánh chính xác tác động tương hỗ phức tạp trong đời thực.
+
+![So sánh SHAP](../assets/shap_comparison.png)
+
+---
+
+## 5. Cơ sở toán học của kỹ thuật giải thích SHAP
 Trong thực nghiệm, việc giải thích phán quyết tín dụng cục bộ (cho từng khách hàng cụ thể) được thực hiện bằng lý thuyết giải thích **SHAP (Shapley Additive exPlanations)**.
-
-### 4.1. Giá trị Shapley (Shapley Values)
+ 
+### 5.1. Giá trị Shapley (Shapley Values)
 Thuật toán dựa trên lý thuyết trò chơi hợp tác (Cooperative Game Theory) phát triển bởi Lloyd Shapley. Trong đó, phán quyết dự báo xác suất duyệt vay $f(x)$ được coi là một "trò chơi", còn 8 đặc trưng hồ sơ đầu vào là các "người chơi". 
-
+ 
 Giá trị đóng góp $\phi_i$ (SHAP value) của thuộc tính thứ $i$ được tính bằng giá trị biên đóng góp trung bình của đặc trưng đó qua tất cả các tổ hợp liên minh đặc trưng có thể có:
-
+ 
 $$\phi_i(x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right]$$
-
+ 
 Trong đó:
 *   $F$ là tập hợp tất cả các đặc trưng đầu vào.
 *   $S$ là một tập con các đặc trưng loại trừ đặc trưng thứ $i$.
 *   $f_x(S)$ là dự báo của mô hình khi chỉ có các đặc trưng thuộc tập $S$.
-
-### 4.2. Tính chất cộng nhất quán toán học (Additive Feature Attribution)
+ 
+### 5.2. Tính chất cộng nhất quán toán học (Additive Feature Attribution)
 Giá trị SHAP của chúng ta hoạt động trực tiếp trong không gian xác suất thực tế. Do đó, tổng giá trị đóng góp của tất cả các đặc trưng luôn luôn bằng hiệu số giữa xác suất dự báo thực tế $f(x)$ và xác suất kỳ vọng trung bình của toàn bộ tập huấn luyện $E[f(X)] \approx 65\%$:
 
 $$f(x) = E[f(X)] + \sum_{i=1}^{M} \phi_i(x)$$
