@@ -87,11 +87,20 @@ Dựa trên kết quả thử nghiệm sơ bộ, nghiên cứu đề xuất 3 h�
 
 ## 6. Phân khúc Người dùng (User Segmentation) trong đợt thu thập dữ liệu thứ hai
 
-Để đào sâu phân tích các nhân tố ảnh hưởng tới **Thiên kiến tự động hóa (Automation Bias)** và **Tải lượng nhận thức (Cognitive Load)**, trong đợt thu thập dữ liệu thứ hai (Phase 2), hệ thống đã bổ sung thu thập hai biến độc lập phân loại ngay từ màn hình đăng nhập:
+Để đào sâu phân tích các nhân tố ảnh hưởng tới **Thiên kiến tự động hóa (Automation Bias)** và **Tải lượng nhận thức (Cognitive Load)**, trong đợt thu thập dữ liệu thứ hai (Phase 2), hệ thống đã bổ sung thu thập các biến độc lập phân loại ngay từ màn hình đăng nhập và hạ tầng tracking nâng cao:
 
 1.  **Chuyên ngành học (Academic Major)**: Phân nhóm đối tượng thành **Khoa học Máy tính / CNTT (IT)**, **Khối ngành Kinh tế / Quản trị (Business)** và **Chuyên ngành Khác**. 
-    *   *Giả thuyết nghiên cứu*: Sinh viên chuyên ngành CNTT có xu hướng nghi ngờ thuật toán cao hơn và ít bị thiên kiến tự động hóa hơn so với sinh viên khối ngành Kinh tế và các ngành khác nhờ có hiểu biết kỹ thuật về bản chất hộp đen của mô hình.
+    *   *Giả thuyết nghiên cứu*: Sinh viên chuyên ngành CNTT có xu hướng nghi ngờ thuật toán cao hơn và ít bị thiên kiến tự động hóa hơn nhờ hiểu biết kỹ thuật về bản chất hộp đen của mô hình.
 2.  **Tần suất tương tác với các công cụ AI (AI Usage Frequency)**: Phân nhóm người dùng theo 4 mức độ tần suất tiếp xúc: **Hiếm khi/Không bao giờ**, **Thỉnh thoảng**, **Khá thường xuyên**, và **Hàng ngày**.
-    *   *Giả thuyết nghiên cứu*: Người dùng tương tác thường xuyên với các công cụ AI (như ChatGPT, Gemini) sẽ có độ nhạy bén cao hơn khi tương tác với Trợ lý ảo giải thích, đồng thời thời gian đọc hiểu biểu đồ XAI của họ sẽ ngắn hơn nhóm ít tiếp xúc.
+3.  **Phân nhóm độ tuổi của người tham gia (Age Group)**: Phân loại theo 5 nhóm tuổi: **Dưới 18**, **18-22 (Sinh viên)**, **23-30 (Người đi làm trẻ)**, **31-45 (Trung niên)** và **Trên 45**.
+    *   *Mục tiêu nghiên cứu*: Đánh giá sự khác biệt thế hệ về lòng tin thuật toán (Algorithm Trust). Nhóm tuổi trẻ (digital natives) dự kiến sẽ thích nghi với biểu đồ giải thích nhanh hơn và tương tác sâu hơn với chatbot.
+4.  **Phân loại Thiết bị & Cảnh báo trải nghiệm (Device Type & Warning)**:
+    *   Tự động ghi nhận thiết bị người dùng sử dụng: **Máy tính (Desktop)**, **Điện thoại (Mobile)**, hoặc **Máy tính bảng (Tablet)**.
+    *   Hệ thống tự động kích hoạt banner cảnh báo đối với người dùng Mobile/Tablet khuyến nghị chuyển đổi sang máy tính để đảm bảo độ chuẩn xác khi đo đạc hành vi rê chuột (hover).
+5.  **Hạ tầng thu thập Mobile Telemetry**:
+    *   *Thời gian thực tế (Visibility Adjusted Time)*: Sử dụng **Page Visibility API** để đo đạc và trừ đi thời gian người dùng bị phân tán (thoát app, khóa màn hình, nhận cuộc gọi), đảm bảo số liệu thời gian phản hồi (Response Time) sạch hoàn toàn.
+    *   *Thời gian chú ý giải thích (Viewport Dwell Time)*: Sử dụng **Intersection Observer API** đo đạc số giây biểu đồ giải thích XAI thực sự nằm trong khung hình của điện thoại, thay thế cho thao tác Hover trên máy tính.
+    *   *Hành vi cuộn (Scroll Dynamics)*: Theo dõi độ sâu cuộn tối đa (%) và số lần cuộn ngược chiều (scroll direction flips) để đối chiếu thông tin hồ sơ vay.
+    *   *Động lực học chạm (Touch Dynamics)*: Ghi nhận thời gian giữ chạm trung bình (touch duration) thể hiện sự phân vân và số lần chạm dồn dập (rage taps) thể hiện sự ức chế với giao diện.
 
 Sự kết hợp giữa 3 nhóm giao diện thực nghiệm ($A, B, C$) và các biến phân khúc người dùng này sẽ cung cấp ma trận dữ liệu phong phú cho các kiểm định thống kê ANOVA và Chi-Square trong phần kết quả thực tế của luận văn.

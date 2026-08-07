@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
     const studentCode = body.student_code || null;
     const major = body.major || null;
     const aiFrequency = body.ai_frequency || null;
+    const ageGroup = body.age_group || null;
+    const device = body.device || null;
 
     const groupAssigned = await chooseGroup();
     
@@ -55,6 +57,8 @@ export async function POST(req: NextRequest) {
         start_time: now,
         major,
         ai_frequency: aiFrequency,
+        age_group: ageGroup,
+        device: device,
       },
     });
 

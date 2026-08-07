@@ -85,6 +85,10 @@ if (process.env.NODE_ENV === "production") {
         writeLocalDb(db);
         return db.users[idx];
       },
+      findUnique: async ({ where }: { where: { user_id: string } }) => {
+        const db = readLocalDb();
+        return db.users.find((u: any) => u.user_id === where.user_id) || null;
+      },
       findMany: async ({ orderBy }: { orderBy?: any }) => {
         const db = readLocalDb();
         return [...db.users].sort(

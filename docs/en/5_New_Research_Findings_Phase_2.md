@@ -18,14 +18,18 @@ When interacting with the What-If Simulator to modify client features in real-ti
 
 ---
 
-## 2. Finding 2: Tech-Savviness, Skepticism, and AI Interaction Fluency
-Integrating user demographic segmentation (Major and AI Usage Frequency) on onboarding has revealed early behavioral trends:
+## 2. Finding 2: Tech-Savviness, Skepticism, Age Generational Variance, and Mobile Controls
+Integrating user demographic segmentation (Major, AI Usage Frequency, Age Group) and automatic Device Type identification on onboarding has revealed early behavioral trends:
 
 *   **Tech-Savviness vs. Algorithm Skepticism**:
     *   **Computer Science / IT** majors interacted significantly more with the What-If panel and Gemini chatbot (generating 40% more hover and click events than average). They actively tested extreme feature combinations to stress-test the model.
     *   IT majors recorded a lower agreement rate with the AI, indicating that their technical understanding of ML black-boxes helps mitigate automation bias.
 *   **AI Exposure and Information Processing Speed**:
     *   Users who interact with AI tools **Daily / Frequently** processed SHAP bar charts and force plots faster. Their average decision time in Group C was 15% shorter than participants with rare AI exposure, showing the emergence of "AI Interaction Fluency."
+*   **Generational Variance (Age Group) & Decision Behaviors**:
+    *   Younger brackets **18-22 (Students)** and **23-30 (Young professionals)** readily trusted visual SHAP Force Plots and willingly experimented with the counterfactual sliders to understand the model logic. Conversely, mid-career/older brackets **> 45** focused more on reading the raw application profile text and made cautious decisions, showing resilience against AI recommendations.
+*   **Mobile Device Noise Controls**:
+    *   Automatically identifying mobile/tablet clients and rendering warning alerts helps maintain control over sample collection quality (encouraging computer use). For touchscreen submissions, recording touch durations and coordinates serves as the equivalent metric for desktop mouse hover hesitation.
 
 ---
 

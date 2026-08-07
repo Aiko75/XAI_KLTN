@@ -139,7 +139,8 @@ if __name__ == "__main__":
         "en/2_Web_System_Documentation.md",
         "en/3_AI_Model_Documentation.md",
         "en/4_Pilot_Experiment_Report.md",
-        "en/5_New_Research_Findings_Phase_2.md"
+        "en/5_New_Research_Findings_Phase_2.md",
+        "test/local_test_analysis.md"
     ]
 
     for filename in files_to_convert:

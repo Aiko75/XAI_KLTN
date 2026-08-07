@@ -7,8 +7,9 @@ interface ProfileTableProps {
   profile: Record<string, any>;
   onHoverFeature?: (featureKey: string) => void;
   lang?: "vi" | "en";
+  shapFactors?: Array<{ feature: string; impact: number; direction: "positive" | "negative" }>;
 }
-
+ 
 const TOOLTIPS_VI: Record<string, string> = {
   Age: "Độ tuổi của người xin vay vốn.",
   MonthlyIncome: "Thu nhập hàng tháng thực tế (VND). Thu nhập cao giúp tăng khả năng thanh toán nợ.",
@@ -19,7 +20,7 @@ const TOOLTIPS_VI: Record<string, string> = {
   BankruptcyHistory: "Lịch sử đã từng phá sản. Khách hàng đã từng phá sản thuộc nhóm rủi ro đặc biệt cao.",
   EmploymentStatus: "Tình trạng việc làm hiện tại. Nhân viên chính thức (Employed) có thu nhập ổn định nhất; Tự doanh (Self-Employed) trung bình; Thất nghiệp (Unemployed) rủi ro cao nhất."
 };
-
+ 
 const TOOLTIPS_EN: Record<string, string> = {
   Age: "Applicant's age.",
   MonthlyIncome: "Actual monthly income (VND). Higher income indicates lower repayment risk.",
@@ -30,10 +31,10 @@ const TOOLTIPS_EN: Record<string, string> = {
   BankruptcyHistory: "History of bankruptcy. Applicants with bankruptcy records are classified as extremely high risk.",
   EmploymentStatus: "Current employment status. Fully employed (Employed) has the most stable income; self-employed is medium; unemployed has the highest default risk."
 };
-
-export default function ProfileTable({ profile, onHoverFeature, lang = "vi" }: ProfileTableProps) {
+ 
+export default function ProfileTable({ profile, onHoverFeature, lang = "vi", shapFactors }: ProfileTableProps) {
   const t = (translations as any)[lang];
-
+ 
   // Features to display in order
   const displayKeys = [
     "Age",
@@ -45,7 +46,7 @@ export default function ProfileTable({ profile, onHoverFeature, lang = "vi" }: P
     "BankruptcyHistory",
     "EmploymentStatus",
   ];
-
+ 
   const formatVal = (key: string, val: any) => {
     if (key === "Age") return `${val} ${t.years}`;
     if (key === "MonthlyIncome" || key === "LoanAmount") {
@@ -64,7 +65,58 @@ export default function ProfileTable({ profile, onHoverFeature, lang = "vi" }: P
     }
     return String(val);
   };
-
+ 
+  const getRating = (key: string, val: any, prof: Record<string, any>) => {
+    if (key === "Age") {
+      const age = Number(val);
+      if (age < 25) return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-amber-400" };
+    }
+    if (key === "MonthlyIncome") {
+      const inc = Number(val);
+      if (inc < 15000000) return { label: lang === "en" ? "Low" : "Thấp", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      if (inc < 30000000) return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "LoanAmount") {
+      const loan = Number(val);
+      const inc = Number(prof.MonthlyIncome) || 1;
+      const ratio = loan / inc;
+      if (ratio > 10) return { label: lang === "en" ? "High" : "Cao", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      if (ratio > 5) return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Low" : "Thấp", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "CreditScore") {
+      const score = Number(val);
+      if (score < 580) return { label: lang === "en" ? "Bad" : "Tệ", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      if (score < 670) return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "TotalDebtToIncomeRatio") {
+      const dti = Number(val);
+      if (dti > 0.40) return { label: lang === "en" ? "High" : "Cao", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      if (dti > 0.25) return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "PreviousLoanDefaults") {
+      const def = Number(val);
+      if (def > 0) return { label: lang === "en" ? "Bad" : "Tệ", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "BankruptcyHistory") {
+      const bank = Number(val);
+      if (bank > 0) return { label: lang === "en" ? "Bad" : "Tệ", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    if (key === "EmploymentStatus") {
+      const status = String(val);
+      if (status === "Unemployed") return { label: lang === "en" ? "Bad" : "Tệ", color: "bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-950/20 dark:text-rose-450" };
+      if (status === "Self-Employed") return { label: lang === "en" ? "Fair" : "Tạm ổn", color: "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/20 dark:text-amber-400" };
+      return { label: lang === "en" ? "Good" : "Tốt", color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/20 dark:text-emerald-400" };
+    }
+    return null;
+  };
+ 
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <div className="border-b border-zinc-100 bg-zinc-50/50 px-4 py-3 dark:border-zinc-800/50 dark:bg-zinc-900/50">
@@ -79,7 +131,11 @@ export default function ProfileTable({ profile, onHoverFeature, lang = "vi" }: P
           const val = profile[key];
           const labelText = t[`feature_${key}`] || meta.label;
           const tooltipText = lang === "en" ? TOOLTIPS_EN[key] : TOOLTIPS_VI[key];
-
+          const rating = getRating(key, val, profile);
+          
+          const factor = shapFactors?.find((f) => f.feature === key);
+          const impactPct = factor ? Math.round(factor.impact * 100) : null;
+ 
           return (
             <div
               key={key}
@@ -93,11 +149,23 @@ export default function ProfileTable({ profile, onHoverFeature, lang = "vi" }: P
                 </span>
                 <HelpCircle className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-700 transition-colors group-hover:text-zinc-500 dark:group-hover:text-zinc-400" />
               </div>
-
-              {/* Feature value */}
-              <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
-                {formatVal(key, val)}
-              </span>
+ 
+              {/* Feature value & Rating badge & SHAP weight */}
+              <div className="flex items-center gap-2">
+                {rating && (
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold border ${rating.color}`}>
+                    {rating.label}
+                  </span>
+                )}
+                {impactPct !== null && impactPct !== 0 && (
+                  <span className={`inline-flex rounded px-1.5 py-0.5 text-[9px] font-mono font-bold ${impactPct >= 0 ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-450 border border-emerald-250/20" : "bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-450 border border-rose-250/20"}`}>
+                    {impactPct >= 0 ? `+${impactPct}%` : `${impactPct}%`}
+                  </span>
+                )}
+                <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                  {formatVal(key, val)}
+                </span>
+              </div>
 
               {/* Hover Tooltip Box */}
               <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 absolute left-4 right-4 -top-8 z-30 rounded-lg border border-zinc-950/5 bg-zinc-950 px-3 py-2 text-[10px] text-zinc-50 shadow-md transition-all duration-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 pointer-events-none -translate-y-2">

@@ -1,0 +1,22 @@
+[
+  {
+    "scenario_id": 7,
+    "feedback": "Số lần nợ xấu 0 lần Lịch sử phá sản Không có lịch sử phá sản Tình trạng việc làm Làm công ăn lương, 3 phần này gần như toàn bộ tình huống là như này nên thành ra 3 yếu tố này ko ảnh hưởng đến lựa chọn",
+    "timestamp": "2026-08-07T14:10:30.467Z"
+  },
+  {
+    "scenario_id": 7,
+    "feedback": "nên có mục thời hạn vay vốn",
+    "timestamp": "2026-08-07T14:10:46.147Z"
+  },
+  {
+    "scenario_id": 12,
+    "feedback": "Thông tin Hồ sơ Tín dụng Tuổi 38 năm Thu nhập hàng tháng 22.030.877 đ Số tiền vay 152.821.748 đ Điểm tín dụng 591 điểm Tỷ lệ DTI 17% Số lần nợ xấu 0 lần Lịch sử phá sản Không có lịch sử phá sản Tình trạng việc làm Làm công ăn lương phần này nên có một cái đánh giá nhanh ở cạnh thông tin, kiểu tốt, ko ổn, tệ luôn chứ để như này ko rõ tốt hay ko tốt, yêu cầu cho tất cả các kịch bản phải như này",
+    "timestamp": "2026-08-07T14:12:23.669Z"
+  },
+  {
+    "scenario_id": 9,
+    "feedback": "cần kiểm tra lại đề xuất và độ tin cậy của tất cả kịch bản, cảm giác ko ổn lắm nhưng ko rõ có vấn đề thật ko (này là nhìn trong giao diện A, nên có thể chính giao diện A khiến tôi có feedback này)",
+    "timestamp": "2026-08-07T14:13:06.579Z"
+  }
+]

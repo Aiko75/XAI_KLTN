@@ -21,6 +21,8 @@ model User {
   feedback              String?       @db.Text
   major                 String?       @db.VarChar(100)
   ai_frequency          String?       @db.VarChar(100)
+  age_group             String?       @db.VarChar(50)
+  device                String?       @db.VarChar(50)
   responses             ResponseLog[]
   surveys               SurveyLog[]
 
@@ -40,6 +42,7 @@ model ResponseLog {
   chat_count               Int      @default(0)
   chat_history             String?  @db.Text
   interactive_clicks       Int      @default(0)
+  telemetry_data           String?  @db.Text
   user                     User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("response_logs")

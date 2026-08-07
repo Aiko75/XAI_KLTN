@@ -156,9 +156,43 @@ export default function Home() {
   const [name, setName] = useState<string>("");
   const [studentCode, setStudentCode] = useState<string>("");
   const [major, setMajor] = useState<string>("");
+  const [occupationType, setOccupationType] = useState<string>("");
+  const [subOccupationType, setSubOccupationType] = useState<string>("");
   const [aiFrequency, setAiFrequency] = useState<string>("");
+  const [ageGroup, setAgeGroup] = useState<string>("");
+  const [device, setDevice] = useState<string>("Desktop");
   const [userId, setUserId] = useState<string>("");
   const [group, setGroup] = useState<"A" | "B" | "C">("A");
+
+  // Device detection on client mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ua = navigator.userAgent.toLowerCase();
+      const isMobile = /mobile|iphone|ipad|ipod|android|blackberry|opera mini|iemobile|webos|fennec|windown phone/i.test(ua);
+      const isTablet = /ipad|tablet|(android(?!.*mobile))/i.test(ua);
+      
+      let detectedDevice = "Desktop";
+      if (isMobile) {
+        detectedDevice = "Mobile";
+      } else if (isTablet || window.innerWidth < 1024) {
+        detectedDevice = "Tablet";
+      }
+      setDevice(detectedDevice);
+    }
+  }, []);
+
+  // Synchronize major field with occupation and sub-occupation combined value
+  useEffect(() => {
+    if (occupationType) {
+      if (subOccupationType) {
+        setMajor(`${occupationType} - ${subOccupationType}`);
+      } else {
+        setMajor(occupationType);
+      }
+    } else {
+      setMajor("");
+    }
+  }, [occupationType, subOccupationType]);
 
   // Feedback State
   const [feedbackText, setFeedbackText] = useState<string>("");
@@ -183,6 +217,11 @@ export default function Home() {
   // Chat states
   const [chatInput, setChatInput] = useState<string>("");
   const [chatLoading, setChatLoading] = useState<boolean>(false);
+
+  // Developer feedback states
+  const [devFeedbackText, setDevFeedbackText] = useState<string>("");
+  const [devFeedbackStatus, setDevFeedbackStatus] = useState<string>("");
+  const [devSubmitMode, setDevSubmitMode] = useState<boolean>(false);
 
   // Load scenarios on mount
   useEffect(() => {
@@ -223,6 +262,228 @@ export default function Home() {
     }
   }, [currentIndex, scenarios]);
 
+  // Advanced Mobile Telemetry Refs
+  const xaiDwellStartTimeRef = useRef<number | null>(null);
+  const xaiDwellTotalRef = useRef<number>(0);
+  
+  const hiddenStartTimeRef = useRef<number | null>(null);
+  const totalHiddenTimeRef = useRef<number>(0);
+
+  const maxScrollDepthRef = useRef<number>(0);
+  const scrollDirChangesRef = useRef<number>(0);
+  const lastScrollYRef = useRef<number>(0);
+  const lastScrollDirRef = useRef<"up" | "down" | null>(null);
+
+  const touchDurationsRef = useRef<number[]>([]);
+  const rageTapsRef = useRef<number>(0);
+  const lastTapTimeRef = useRef<number>(0);
+  const lastTapXRef = useRef<number>(0);
+  const lastTapYRef = useRef<number>(0);
+  const tapCountInStreakRef = useRef<number>(0);
+
+  // Reset scenario-level metrics when currentIndex changes
+  useEffect(() => {
+    xaiDwellStartTimeRef.current = null;
+    xaiDwellTotalRef.current = 0;
+    hiddenStartTimeRef.current = null;
+    totalHiddenTimeRef.current = 0;
+    maxScrollDepthRef.current = 0;
+    scrollDirChangesRef.current = 0;
+    lastScrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+    lastScrollDirRef.current = null;
+    touchDurationsRef.current = [];
+    rageTapsRef.current = 0;
+    lastTapTimeRef.current = 0;
+    lastTapXRef.current = 0;
+    lastTapYRef.current = 0;
+    tapCountInStreakRef.current = 0;
+    setDevFeedbackText("");
+    setDevFeedbackStatus("");
+  }, [currentIndex]);
+
+  // Listener 1: Page Visibility API (subtract idle time)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (typeof document === "undefined") return;
+      
+      if (document.visibilityState === "hidden") {
+        hiddenStartTimeRef.current = Date.now();
+        if (xaiDwellStartTimeRef.current !== null) {
+          xaiDwellTotalRef.current += (Date.now() - xaiDwellStartTimeRef.current) / 1000;
+          xaiDwellStartTimeRef.current = null;
+        }
+      } else if (document.visibilityState === "visible") {
+        if (hiddenStartTimeRef.current !== null) {
+          totalHiddenTimeRef.current += (Date.now() - hiddenStartTimeRef.current) / 1000;
+          hiddenStartTimeRef.current = null;
+        }
+        // If testing and element is visible, viewport observer will resume tracking
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Listener 2: Intersection Observer API (XAI element Viewport Dwell Time)
+  useEffect(() => {
+    if (typeof window === "undefined" || step !== "TESTING" || group !== "C") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            xaiDwellStartTimeRef.current = Date.now();
+          } else {
+            if (xaiDwellStartTimeRef.current !== null) {
+              xaiDwellTotalRef.current += (Date.now() - xaiDwellStartTimeRef.current) / 1000;
+              xaiDwellStartTimeRef.current = null;
+            }
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    const el = document.getElementById("xai-explanation-panel");
+    if (el) {
+      observer.observe(el);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (xaiDwellStartTimeRef.current !== null) {
+        xaiDwellTotalRef.current += (Date.now() - xaiDwellStartTimeRef.current) / 1000;
+        xaiDwellStartTimeRef.current = null;
+      }
+    };
+  }, [step, currentIndex, group]);
+
+  // Listener 3: Scroll patterns (Scroll depth & direction flips)
+  useEffect(() => {
+    if (typeof window === "undefined" || step !== "TESTING") return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      if (documentHeight > windowHeight) {
+        const depthPct = Math.round((scrollY / (documentHeight - windowHeight)) * 100);
+        if (depthPct > maxScrollDepthRef.current) {
+          maxScrollDepthRef.current = Math.min(depthPct, 100);
+        }
+      }
+
+      if (scrollY !== lastScrollYRef.current) {
+        const currentDir = scrollY > lastScrollYRef.current ? "down" : "up";
+        if (lastScrollDirRef.current !== null && lastScrollDirRef.current !== currentDir) {
+          scrollDirChangesRef.current += 1;
+        }
+        lastScrollDirRef.current = currentDir;
+        lastScrollYRef.current = scrollY;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [step, currentIndex]);
+
+  // Listener 4: Touch events & Rage tap monitor
+  useEffect(() => {
+    if (typeof window === "undefined" || step !== "TESTING") return;
+
+    const touchStartTimes = new Map<string, number>();
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      const identifier = String(touch.identifier);
+      touchStartTimes.set(identifier, Date.now());
+
+      const tapX = touch.clientX;
+      const tapY = touch.clientY;
+      const now = Date.now();
+      
+      const dist = Math.sqrt(Math.pow(tapX - lastTapXRef.current, 2) + Math.pow(tapY - lastTapYRef.current, 2));
+      const timeDiff = now - lastTapTimeRef.current;
+
+      if (timeDiff < 350 && dist < 30) {
+        tapCountInStreakRef.current += 1;
+        if (tapCountInStreakRef.current >= 3) {
+          rageTapsRef.current += 1;
+          tapCountInStreakRef.current = 0;
+        }
+      } else {
+        tapCountInStreakRef.current = 1;
+      }
+
+      lastTapTimeRef.current = now;
+      lastTapXRef.current = tapX;
+      lastTapYRef.current = tapY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      const identifier = String(touch.identifier);
+      const startTime = touchStartTimes.get(identifier);
+      if (startTime) {
+        const duration = Date.now() - startTime;
+        touchDurationsRef.current.push(duration);
+        touchStartTimes.delete(identifier);
+      }
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      touchStartTimes.set("mouse", Date.now());
+
+      const tapX = e.clientX;
+      const tapY = e.clientY;
+      const now = Date.now();
+      
+      const dist = Math.sqrt(Math.pow(tapX - lastTapXRef.current, 2) + Math.pow(tapY - lastTapYRef.current, 2));
+      const timeDiff = now - lastTapTimeRef.current;
+
+      if (timeDiff < 350 && dist < 30) {
+        tapCountInStreakRef.current += 1;
+        if (tapCountInStreakRef.current >= 3) {
+          rageTapsRef.current += 1;
+          tapCountInStreakRef.current = 0;
+        }
+      } else {
+        tapCountInStreakRef.current = 1;
+      }
+
+      lastTapTimeRef.current = now;
+      lastTapXRef.current = tapX;
+      lastTapYRef.current = tapY;
+    };
+
+    const handleMouseUp = () => {
+      const startTime = touchStartTimes.get("mouse");
+      if (startTime) {
+        const duration = Date.now() - startTime;
+        touchDurationsRef.current.push(duration);
+        touchStartTimes.delete("mouse");
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("mousedown", handleMouseDown, { passive: true });
+    window.addEventListener("mouseup", handleMouseUp, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [step, currentIndex]);
+
   const handleSimChange = (key: string, value: any) => {
     setSimProfile((prev) => {
       if (!prev) return null;
@@ -236,8 +497,13 @@ export default function Home() {
 
   const handleStartExperiment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !studentCode.trim() || !major || !aiFrequency) {
+    if (!name.trim() || !studentCode.trim() || !occupationType || !aiFrequency || !ageGroup) {
       setError(lang === "en" ? "Please fill in all information fields." : "Vui lòng điền đầy đủ toàn bộ thông tin yêu cầu.");
+      return;
+    }
+    const needsSub = occupationType === "Sinh viên" || occupationType === "Student" || occupationType === "Người đi làm" || occupationType === "Employed";
+    if (needsSub && !subOccupationType) {
+      setError(lang === "en" ? "Please select your major or industry details." : "Vui lòng chọn chi tiết chuyên ngành hoặc lĩnh vực của bạn.");
       return;
     }
 
@@ -245,7 +511,14 @@ export default function Home() {
     setError(null);
 
     try {
-      const userRes = await startUser(name.trim(), studentCode.trim(), major, aiFrequency);
+      const userRes = await startUser(
+        name.trim(), 
+        studentCode.trim(), 
+        major, 
+        aiFrequency,
+        ageGroup,
+        device
+      );
       setUserId(userRes.user_id);
       setGroup(userRes.group_assigned);
       setCurrentIndex(0);
@@ -322,7 +595,45 @@ export default function Home() {
   };
 
   const handleUserDecision = async (decisionType: "agree" | "reject") => {
-    const timeSpent = (Date.now() - startTimeRef.current) / 1000;
+    // 1. Compute out-of-focus (hidden/background) time
+    let extraHidden = 0;
+    if (hiddenStartTimeRef.current !== null) {
+      extraHidden = (Date.now() - hiddenStartTimeRef.current) / 1000;
+    }
+    const finalHiddenTime = totalHiddenTimeRef.current + extraHidden;
+
+    // 2. Compute final time spent excluding hidden time
+    const rawTimeSpent = (Date.now() - startTimeRef.current) / 1000;
+    const timeSpent = Math.max(0.1, rawTimeSpent - finalHiddenTime);
+
+    // 3. Compute XAI card dwell duration
+    let extraXaiDwell = 0;
+    if (xaiDwellStartTimeRef.current !== null) {
+      extraXaiDwell = (Date.now() - xaiDwellStartTimeRef.current) / 1000;
+    }
+    const xaiDwellTotal = xaiDwellTotalRef.current + extraXaiDwell;
+
+    // 4. Compute touch metrics
+    const tDurations = touchDurationsRef.current;
+    const avgTouchDuration = tDurations.length > 0
+      ? Math.round(tDurations.reduce((sum, val) => sum + val, 0) / tDurations.length)
+      : 0;
+
+    // 5. Construct telemetry_data JSON string
+    const telemetryObj = {
+      device_detected: device,
+      screen_width: typeof window !== "undefined" ? window.innerWidth : 0,
+      screen_height: typeof window !== "undefined" ? window.innerHeight : 0,
+      scroll_depth_pct: maxScrollDepthRef.current,
+      scroll_dir_changes: scrollDirChangesRef.current,
+      rage_taps: rageTapsRef.current,
+      avg_touch_duration_ms: avgTouchDuration,
+      xai_dwell_time_seconds: Math.round(xaiDwellTotal * 100) / 100,
+      hidden_time_seconds: Math.round(finalHiddenTime * 100) / 100,
+      raw_time_spent_seconds: Math.round(rawTimeSpent * 100) / 100
+    };
+    const telemetryDataStr = JSON.stringify(telemetryObj);
+
     const currentScenario = scenarios[currentIndex];
 
     // Compute correctness for validation
@@ -333,18 +644,21 @@ export default function Home() {
 
     setLoading(true);
     try {
-      await saveResponse({
-        user_id: userId,
-        scenario_id: currentScenario.scenario_id,
-        user_decision: decisionType,
-        time_spent_seconds: timeSpent,
-        is_correct_on_error_case: isCorrect,
-        hover_count: hoverCount,
-        hover_details: JSON.stringify(hoverDetails),
-        chat_count: chatCount,
-        chat_history: JSON.stringify(chatHistory),
-        interactive_clicks: interactiveClicks,
-      });
+      if (userId !== "u_dev_preview" || devSubmitMode) {
+        await saveResponse({
+          user_id: userId,
+          scenario_id: currentScenario.scenario_id,
+          user_decision: decisionType,
+          time_spent_seconds: timeSpent,
+          is_correct_on_error_case: isCorrect,
+          hover_count: hoverCount,
+          hover_details: JSON.stringify(hoverDetails),
+          chat_count: chatCount,
+          chat_history: JSON.stringify(chatHistory),
+          interactive_clicks: interactiveClicks,
+          telemetry_data: telemetryDataStr,
+        });
+      }
 
       if (currentIndex < scenarios.length - 1) {
         setCurrentIndex((prev) => prev + 1);
@@ -376,6 +690,28 @@ export default function Home() {
       setError(err.message || "Không thể gửi bài khảo sát. Vui lòng thử lại.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendDevFeedback = async () => {
+    if (!devFeedbackText.trim()) return;
+    setDevFeedbackStatus("sending");
+    try {
+      const currentScenario = scenarios[currentIndex];
+      const res = await fetch("/api/dev/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scenario_id: currentScenario.scenario_id,
+          feedback: devFeedbackText,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to save feedback");
+      }
+      setDevFeedbackStatus("success");
+    } catch (e) {
+      setDevFeedbackStatus("error");
     }
   };
 
@@ -416,34 +752,75 @@ export default function Home() {
               </button>
             </div>
           </div>
-          {(step === "TESTING" || step === "TUTORIAL") && (
+          {process.env.NODE_ENV === "development" ? (
             <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
-              {process.env.NODE_ENV === "development" && (
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 rounded-lg">
-                  <span className="text-[9px] uppercase font-bold text-zinc-400 px-1">Dev:</span>
-                  {(["A", "B", "C"] as const).map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => {
-                        setGroup(g);
-                        setInteractiveClicks((prev) => prev + 1);
-                      }}
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-colors ${
-                        group === g
-                          ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-zinc-950"
-                          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      {g}
-                    </button>
+              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1.5 rounded-lg">
+                <span className="text-[9px] uppercase font-bold text-zinc-400 px-1">Dev:</span>
+                {(["A", "B", "C"] as const).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => {
+                      setGroup(g);
+                      setInteractiveClicks((prev) => prev + 1);
+                    }}
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-colors ${
+                      group === g
+                        ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-zinc-950"
+                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+                
+                {/* Scenario Preview Picker */}
+                <select
+                  value={step === "TESTING" ? currentIndex : ""}
+                  onChange={(e) => {
+                    const idx = parseInt(e.target.value, 10);
+                    if (!isNaN(idx)) {
+                      setUserId("u_dev_preview");
+                      setStep("TESTING");
+                      setCurrentIndex(idx);
+                    }
+                  }}
+                  className="rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-[10px] font-semibold px-1 py-0.5 ml-1 text-zinc-850 dark:text-zinc-150"
+                >
+                  <option value="" disabled>{lang === "en" ? "Preview Scenario..." : "Xem nhanh câu..."}</option>
+                  {scenarios.map((_, i) => (
+                    <option key={i} value={i}>
+                      {lang === "en" ? `Scenario ${i + 1}` : `Câu ${i + 1}`}
+                    </option>
                   ))}
+                </select>
+
+                {/* Save Response Toggle Switch */}
+                <div className="flex items-center gap-1 bg-zinc-200/40 dark:bg-zinc-850 px-2 py-0.5 rounded border border-zinc-300/30 dark:border-zinc-700/30 ml-1">
+                  <label className="text-[9px] font-bold text-zinc-650 dark:text-zinc-350 uppercase flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={devSubmitMode}
+                      onChange={(e) => setDevSubmitMode(e.target.checked)}
+                      className="rounded border-zinc-300 text-zinc-950 focus:ring-0 cursor-pointer h-3 w-3"
+                    />
+                    {lang === "en" ? "Record Answers" : "Ghi câu trả lời"}
+                  </label>
                 </div>
+              </div>
+              {(step === "TESTING" || step === "TUTORIAL") && (
+                <span>{lang === "en" ? "User ID:" : "Mã kiểm thử:"} {userId}</span>
               )}
-              <span>{lang === "en" ? "User ID:" : "Mã kiểm thử:"} {userId}</span>
-              <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 font-bold uppercase text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
-                {lang === "en" ? "Group" : "Nhóm"} {group}
-              </span>
             </div>
+          ) : (
+            (step === "TESTING" || step === "TUTORIAL") && (
+              <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
+                <span>{lang === "en" ? "User ID:" : "Mã kiểm thử:"} {userId}</span>
+                <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 font-bold uppercase text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                  {lang === "en" ? "Group" : "Nhóm"} {group}
+                </span>
+              </div>
+            )
           )}
         </div>
       </header>
@@ -466,6 +843,11 @@ export default function Home() {
             <p className="mt-3 text-sm text-zinc-500 leading-relaxed">
               {lang === "en" ? t.login_desc : WELCOME_DESCRIPTION}
             </p>
+            {device !== "Desktop" && (
+              <div className="mt-4 rounded-xl bg-amber-50 border border-amber-250 p-4 text-xs text-amber-800 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-400 font-semibold leading-relaxed">
+                {t.mobile_warning}
+              </div>
+            )}
             <form onSubmit={handleStartExperiment} className="mt-6 space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
@@ -495,22 +877,78 @@ export default function Home() {
               </div>
 
               {/* Major of Study */}
+              {/* Occupation selection */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   {t.major_label}
                 </label>
                 <select
                   required
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
+                  value={occupationType}
+                  onChange={(e) => {
+                    setOccupationType(e.target.value);
+                    setSubOccupationType("");
+                  }}
                   className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
                 >
                   <option value="" disabled className="text-zinc-400 dark:bg-zinc-950">{t.major_placeholder}</option>
-                  <option value="CNTT" className="dark:bg-zinc-950">{t.major_cs}</option>
-                  <option value="Kinh tế" className="dark:bg-zinc-950">{t.major_biz}</option>
-                  <option value="Khác" className="dark:bg-zinc-950">{t.major_other}</option>
+                  <option value={lang === "en" ? "Student" : "Sinh viên"} className="dark:bg-zinc-950">{lang === "en" ? "Student" : "Sinh viên"}</option>
+                  <option value={lang === "en" ? "Employed" : "Người đi làm"} className="dark:bg-zinc-950">{lang === "en" ? "Employed / Professional" : "Người đi làm"}</option>
+                  <option value={lang === "en" ? "Self-Employed" : "Tự doanh / Tự do"} className="dark:bg-zinc-950">{lang === "en" ? "Self-Employed / Freelancer" : "Tự doanh / Tự do"}</option>
+                  <option value={lang === "en" ? "Other" : "Khác"} className="dark:bg-zinc-950">{lang === "en" ? "Other" : "Khác"}</option>
                 </select>
               </div>
+
+              {/* Sub-Occupation (Only visible for Sinh viên and Người đi làm) */}
+              {(occupationType === "Sinh viên" || occupationType === "Student" || occupationType === "Người đi làm" || occupationType === "Employed") && (
+                <div className="space-y-1.5 animate-fadeIn">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    {lang === "en" ? "Details / Sector" : "Chuyên ngành / Lĩnh vực chi tiết"}
+                  </label>
+                  <select
+                    required
+                    value={subOccupationType}
+                    onChange={(e) => setSubOccupationType(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                  >
+                    <option value="" disabled className="text-zinc-400 dark:bg-zinc-950">{t.sub_major_placeholder}</option>
+                    {(occupationType === "Sinh viên" || occupationType === "Student") ? (
+                      <>
+                        <option value={lang === "en" ? "STEM / Technical" : "Khối ngành Kỹ thuật / Công nghệ"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "STEM / Technical" : "Khối ngành Kỹ thuật / Công nghệ"}
+                        </option>
+                        <option value={lang === "en" ? "Economics / Business" : "Khối ngành Kinh tế / Quản trị"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Economics / Business" : "Khối ngành Kinh tế / Quản trị"}
+                        </option>
+                        <option value={lang === "en" ? "Medical / Healthcare" : "Khối ngành Y tế / Sức khỏe"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Medical / Healthcare" : "Khối ngành Y tế / Sức khỏe"}
+                        </option>
+                        <option value={lang === "en" ? "Social Sciences" : "Khối ngành Khoa học Xã hội"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Social Sciences / Humanities" : "Khối ngành Khoa học Xã hội"}
+                        </option>
+                        <option value={lang === "en" ? "Other" : "Khác"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Other" : "Khác"}
+                        </option>
+                      </>
+                    ) : (
+                      <>
+                        <option value={lang === "en" ? "Tech / Engineering" : "Lĩnh vực Kỹ thuật / Công nghệ"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Tech / Engineering" : "Lĩnh vực Kỹ thuật / Công nghệ"}
+                        </option>
+                        <option value={lang === "en" ? "Finance / Business" : "Lĩnh vực Kinh tế / Tài chính / Quản trị"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Finance / Business / Management" : "Lĩnh vực Kinh tế / Tài chính / Quản trị"}
+                        </option>
+                        <option value={lang === "en" ? "Healthcare / Education" : "Lĩnh vực Y tế / Giáo dục"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Healthcare / Education / Public Services" : "Lĩnh vực Y tế / Giáo dục / Dịch vụ công"}
+                        </option>
+                        <option value={lang === "en" ? "Other" : "Lĩnh vực khác"} className="dark:bg-zinc-950">
+                          {lang === "en" ? "Other" : "Lĩnh vực khác"}
+                        </option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
 
               {/* AI Frequency */}
               <div className="space-y-1.5">
@@ -528,6 +966,26 @@ export default function Home() {
                   <option value="Thỉnh thoảng" className="dark:bg-zinc-950">{t.ai_freq_occasional}</option>
                   <option value="Thường xuyên" className="dark:bg-zinc-950">{t.ai_freq_weekly}</option>
                   <option value="Hàng ngày" className="dark:bg-zinc-950">{t.ai_freq_daily}</option>
+                </select>
+              </div>
+
+              {/* Age Group */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t.age_group_label}
+                </label>
+                <select
+                  required
+                  value={ageGroup}
+                  onChange={(e) => setAgeGroup(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm bg-transparent focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                >
+                  <option value="" disabled className="text-zinc-400 dark:bg-zinc-950">{t.age_group_placeholder}</option>
+                  <option value="< 18" className="dark:bg-zinc-950">{t.age_under_18}</option>
+                  <option value="18-22" className="dark:bg-zinc-950">{t.age_18_22}</option>
+                  <option value="23-30" className="dark:bg-zinc-950">{t.age_23_30}</option>
+                  <option value="31-45" className="dark:bg-zinc-950">{t.age_31_45}</option>
+                  <option value="> 45" className="dark:bg-zinc-950">{t.age_above_45}</option>
                 </select>
               </div>
               <button
@@ -690,6 +1148,7 @@ export default function Home() {
                       profile={scenarios[currentIndex].profile} 
                       onHoverFeature={handleHoverFeature}
                       lang={lang}
+                      shapFactors={scenarios[currentIndex].shap_summary.top_factors}
                     />
                   </div>
 
@@ -1032,6 +1491,7 @@ export default function Home() {
                     profile={scenarios[currentIndex].profile} 
                     onHoverFeature={handleHoverFeature}
                     lang={lang}
+                    shapFactors={group === "B" ? scenarios[currentIndex].shap_summary.top_factors : undefined}
                   />
                 </div>
 
@@ -1125,6 +1585,42 @@ export default function Home() {
                 {t.btn_agree_ai}
               </button>
             </div>
+
+            {/* Developer Feedback Area */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="mt-4 border-t border-zinc-200/80 pt-4 dark:border-zinc-805 text-left">
+                <label className="block text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                  {lang === "en" ? "DEV ONLY: Scenario Feedback (Saves to local JSON)" : "Dành cho DEV: Ý kiến phản hồi tình huống (Lưu vào file JSON)"}
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder={lang === "en" ? "e.g. Check spelling or adjust AI decision confidence" : "Ví dụ: Điều chỉnh độ tin cậy AI hoặc sửa lỗi chính tả..."}
+                    value={devFeedbackText}
+                    onChange={(e) => setDevFeedbackText(e.target.value)}
+                    className="flex-1 rounded-xl border border-zinc-200 px-3.5 py-2 text-xs focus:border-zinc-950 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendDevFeedback}
+                    disabled={!devFeedbackText.trim() || devFeedbackStatus === "sending"}
+                    className="rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-850 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 px-4 py-2 text-xs font-bold transition-colors disabled:bg-zinc-300 dark:disabled:bg-zinc-800"
+                  >
+                    {devFeedbackStatus === "sending" ? (lang === "en" ? "Saving..." : "Đang lưu...") : (lang === "en" ? "Save Comment" : "Lưu phản hồi")}
+                  </button>
+                </div>
+                {devFeedbackStatus === "success" && (
+                  <span className="block mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold animate-fadeIn">
+                    ✓ {lang === "en" ? "Feedback saved to scenario_feedback.json" : "Đã lưu phản hồi vào file scenario_feedback.json"}
+                  </span>
+                )}
+                {devFeedbackStatus === "error" && (
+                  <span className="block mt-1 text-[11px] text-rose-600 dark:text-rose-450 font-semibold animate-fadeIn">
+                    ✗ {lang === "en" ? "Failed to save feedback" : "Lưu phản hồi thất bại"}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 

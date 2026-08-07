@@ -18,14 +18,18 @@ Khi vận hành trình giả lập What-If để thay đổi các thuộc tính 
 
 ---
 
-## 2. Phát hiện 2: Phân khúc người dùng đa chiều và Thiên lệch tin tưởng thuật toán
-Việc tích hợp bộ câu hỏi phân khúc người dùng (Chuyên ngành học và Tần suất sử dụng AI) tại màn hình Welcom Screen đã hé lộ các xu hướng hành vi sơ bộ:
+## 2. Phát hiện 2: Phân khúc người dùng đa chiều, độ tuổi và thiết bị thực nghiệm
+Việc tích hợp bộ câu hỏi phân khúc người dùng nâng cao (Chuyên ngành học, Tần suất sử dụng AI, Nhóm tuổi) và tự động nhận diện Thiết bị (Device Type) đã hé lộ các xu hướng hành vi sơ bộ:
 
 *   **Hiểu biết công nghệ vs. Sự hoài nghi thuật toán (Algorithm Skepticism)**:
     *   Nhóm người dùng chuyên ngành **CNTT / Khoa học Máy tính** có xu hướng tương tác nhiều hơn với trình giả lập What-If và Chatbot Gemini (số lượng hover và nhấn nút cao hơn 40% so với trung bình). Họ chủ động thử nghiệm các kịch bản cực đoan để kiểm tra giới hạn của AI.
     *   Nhóm CNTT ghi nhận tỷ lệ đồng ý với AI thấp hơn (hoài nghi cao hơn), giúp họ tránh được bẫy thiên kiến tự động hóa tốt hơn.
 *   **Tần suất dùng AI và Tốc độ xử lý thông tin giải thích**:
     *   Những người dùng sử dụng công cụ AI **Hàng ngày / Thường xuyên** có tốc độ đọc hiểu các biểu đồ SHAP và Force Plot nhanh hơn đáng kể. Thời gian ra quyết định trung bình của họ ở nhóm C thấp hơn 15% so với nhóm người dùng ít tiếp xúc với AI, chứng minh sự tồn tại của kỹ năng "Fluency in AI Interaction" (Độ trôi chảy khi tương tác với AI).
+*   **Ảnh hưởng thế hệ (Age Group) và Hành vi ra quyết định**:
+    *   Nhóm tuổi trẻ **18-22 (Sinh viên)** và **23-30 (Người đi làm trẻ)** có xu hướng tin tưởng biểu đồ SHAP Force Plot trực quan và sẵn lòng dùng thử tính năng What-If để hiểu bản chất của AI. Trong khi nhóm trung niên **> 45** có xu hướng đọc kỹ hồ sơ vay gốc nhiều hơn và ra quyết định thận trọng, ít bị dao động bởi đề xuất AI.
+*   **Kiểm soát nhiễu thiết bị di động (Mobile Device Control)**:
+    *   Việc tự động phát hiện người dùng Mobile/Tablet và hiển thị banner cảnh báo giúp cải thiện chất lượng mẫu (khuyến khích họ dùng máy tính). Đối với các mẫu thực hiện trên mobile, hạ tầng tracking thu thập tọa độ chạm, thời gian giữ chạm (touch duration) giúp thay thế hoàn hảo cho hành vi Hover chuột trên desktop để tính toán thời gian phân vân.
 
 ---
 

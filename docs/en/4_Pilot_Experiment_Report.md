@@ -88,13 +88,22 @@ Based on the pilot observations, three key system improvements were proposed and
 
 ---
 
-## 6. User Segmentation for the Phase 2 Study
+## 6. User Segmentation & Advanced Mobile Telemetry for Phase 2
 
-To analyze the factors modulating **Automation Bias** and **Cognitive Load**, the second phase of data collection introduces two demographic classification variables captured on onboarding:
+To analyze the factors modulating **Automation Bias** and **Cognitive Load**, the second phase of data collection introduces granular demographic classification variables captured on onboarding and a custom mobile telemetry engine:
 
 1.  **Academic Major**: Grouping participants into **Computer Science/IT (IT)**, **Business/Economics (Business)**, and **Others**.
-    *   *Research Hypothesis*: IT students will exhibit higher skepticism towards algorithmic suggestions, resulting in lower automation bias compared to Business/Economics and Other students due to their technical understanding of the black-box model.
+    *   *Research Hypothesis*: IT students will exhibit higher skepticism towards algorithmic suggestions, resulting in lower automation bias due to their technical understanding of the black-box model.
 2.  **AI Tools Usage Frequency**: Classifying users by their exposure frequency: **Rarely or never**, **Occasionally**, **Frequently**, and **Daily**.
-    *   *Research Hypothesis*: Users with high AI exposure will demonstrate higher fluency when interacting with the conversational AI explainer and record shorter reading times for XAI charts.
+3.  **Participant's Age Group**: Categorizing subjects into 5 brackets: **Under 18**, **18-22 (Students)**, **23-30 (Young professionals)**, **31-45 (Mid-career)**, and **Above 45**.
+    *   *Research Hypothesis*: Age-based groups will capture generational variance in algorithm trust. Younger digital natives are expected to adapt quicker to XAI charts and seek deeper chatbot explanation details.
+4.  **Device Type & Warning Banner**:
+    *   Automatically record the client device: **Desktop**, **Mobile**, or **Tablet**.
+    *   Present a prominent suggestion banner to mobile/tablet users to switch to a computer to ensure clean hover metric capture.
+5.  **Advanced Mobile Telemetry Subsystem**:
+    *   *Visibility Adjusted Time*: Utilizes the **Page Visibility API** to track tab out-of-focus segments (app-switching, screen lock) and subtracts it from `time_spent_seconds` to deliver clean response times.
+    *   *Viewport Dwell Time (XAI Card)*: Employs the **Intersection Observer API** to calculate how long the explanation element was visible in the active viewport, replacing hover metrics for mobile.
+    *   *Scroll Dynamics*: Logs peak scroll depth (%) and scroll direction changes to model context comparisons.
+    *   *Touch Dynamics*: Measures click/tap holding durations (hesitation) and rage taps (user frustration/impatience).
 
 The combination of the three experimental interfaces ($A, B, C$) with these user segmentation variables will supply a rich data matrix for ANOVA and Chi-Square statistical tests in the thesis results.

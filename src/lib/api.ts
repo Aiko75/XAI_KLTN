@@ -52,7 +52,9 @@ export async function startUser(
   name: string, 
   studentCode: string, 
   major: string, 
-  aiFrequency: string
+  aiFrequency: string,
+  ageGroup: string,
+  device: string
 ): Promise<StartUserResponse> {
   const res = await fetch("/api/users/start", {
     method: "POST",
@@ -61,7 +63,9 @@ export async function startUser(
       name, 
       student_code: studentCode,
       major,
-      ai_frequency: aiFrequency
+      ai_frequency: aiFrequency,
+      age_group: ageGroup,
+      device: device
     }),
   });
   if (!res.ok) {
@@ -82,6 +86,7 @@ export async function saveResponse(payload: {
   chat_count?: number;
   chat_history?: string;
   interactive_clicks?: number;
+  telemetry_data?: string;
 }): Promise<void> {
   const res = await fetch("/api/responses", {
     method: "POST",
