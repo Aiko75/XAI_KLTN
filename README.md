@@ -16,7 +16,31 @@ This platform tests these dynamics using 20 credit underwriting scenarios contai
 
 ---
 
-## 2. Experimental Group Design (A/B/C Testing)
+## 2. Research Methodology & Statistical Design
+For the complete academic framework and equations, refer to [Research_Methodology_and_Statistical_Design.md](data/2nd%20test/Research_Methodology_and_Statistical_Design.md) ([Vietnamese DOCX version](data/2nd%20test/Research_Methodology_and_Statistical_Design.docx)).
+
+### Summary for Quick Reading:
+The empirical study uses a **$3 \times 2$ mixed factorial design** to analyze how Explainable AI layout complexities impact credit underwriter behaviors:
+
+1.  **Independent Variables (IVs)**:
+    *   **IV1 (Between-Subjects): Explainable AI Fidelity**:
+        *   *Group A (Control)*: Black-box AI (Only recommendation and confidence level).
+        *   *Group B (Treatment 1)*: Static XAI (SHAP Bar Chart + natural language explanation summary).
+        *   *Group C (Treatment 2)*: Interactive XAI (SHAP Force Plot + What-if analysis + Pearson Correlation Matrix + Interactive Gemini Bilingual Chatbot).
+    *   **IV2 (Within-Subjects): AI Suggestion Accuracy**:
+        *   *Normal Cases (14 Scenarios)*: AI predictions are accurate and business-aligned.
+        *   *Trap/Adversarial Cases (6 Scenarios)*: AI predictions are intentionally flawed (e.g., recommending approval for high-risk default profiles).
+2.  **Dependent Variables (DVs)**:
+    *   **DV1: Trust Calibration (Decision Quality)**: Coded as `1` for detecting traps (rejecting wrong AI) or agreeing with correct AI; `0` otherwise.
+    *   **DV2: Response Time (s)**: Underwriting duration spent on each credit file.
+    *   **DV3: Cognitive Workload**: NASA-TLX workload scores (Mental, Temporal, Performance, Effort, Frustration, and Overall load).
+3.  **Statistical Analysis Framework**:
+    *   **Generalized Estimating Equations (GEE)**: Fits a logit link function for binary DV1 (Accuracy) and a linear identity link for continuous DV2 (Response Time) to compute population-averaged effects under an Autoregressive AR(1) or Exchangeable correlation structure.
+    *   **Generalized Linear Mixed-Effects Models (GLMM)**: Controls for subject-specific random intercepts (`(1 | User_ID)`) and scenario-specific random intercepts (`(1 | Scenario_ID)`).
+
+---
+
+## 3. Experimental Group Design (A/B/C Testing)
 
 Participants are randomly assigned to one of three interface groups:
 *   **Group A (Control - Black-Box AI)**: Displays only the client's financial profile and the final AI recommendation (Approve/Reject) with its confidence level.
@@ -25,7 +49,7 @@ Participants are randomly assigned to one of three interface groups:
 
 ---
 
-## 3. Telemetry & Data Capture
+## 4. Telemetry & Data Capture
 
 To capture granular underwriter behaviors, the platform logs the following metrics to a Supabase PostgreSQL backend via Prisma ORM:
 *   **Decision Metrics**: Agreement/Disagreement rate with the AI, and accuracy in detecting adversarial AI errors (traps).
@@ -36,22 +60,17 @@ To capture granular underwriter behaviors, the platform logs the following metri
 
 ---
 
-## 4. Repository Structure
+## 5. Repository Structure
 
 ```markdown
-├── data/                    # Cleaned credit risk dataset
+├── data/                    # Dataset and Analysis reports
+│   ├── 1st test/            # Pilot phase 1 logs and reports (shuffled, optimization)
+│   └── 2nd test/            # GEE methodology, real-time data reports, demographic analysis
 ├── docs/                    # Research documentation
 │   ├── assets/              # Evaluation charts & UI screenshots
-│   ├── en/                  # English Academic Documentation
-│   │   ├── 1_Project_Overview.md / .docx
-│   │   ├── 2_Web_System_Documentation.md / .docx
-│   │   ├── 3_AI_Model_Documentation.md / .docx
-│   │   └── 4_Pilot_Experiment_Report.md / .docx
-│   ├── vi/                  # Vietnamese Academic Documentation
-│   │   ├── 1_Tong_Quan_De_Tai.md / .docx
-│   │   ├── 2_Tai_Lieu_He_Thong_Web.md / .docx
-│   │   ├── 3_Tai_Lieu_Mo_Hinh_AI.md / .docx
-│   │   └── 4_Bao_Cao_Thuc_Nghiem_So_Bo.md / .docx
+│   ├── en/                  # English Academic Documentation (Overview, Web, AI, Pilot reports)
+│   ├── vi/                  # Vietnamese Academic Documentation (Tổng quan, Hệ thống, Mô hình, Pilot)
+│   ├── test/                # Internal local test analysis reports
 │   └── convert_to_docx.py   # Pandoc/python-docx compiler script
 ├── prisma/                  # Database schema (PostgreSQL)
 ├── public/                  # Static assets for Next.js
