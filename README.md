@@ -98,3 +98,10 @@ npm run dev
 *   Access the main experimental UI: `http://localhost:3000`
 *   Toggle English/Vietnamese language directly in the top header.
 *   Access the Swagger API documentation: `http://localhost:3000/docs`
+
+---
+
+## 6. AI Collaboration & Attribution
+*   **System Development & Codebase Assistance**: This empirical platform, database integration, telemetry listeners, and report compilers were co-developed with **Antigravity (Advanced Agentic Coding Assistant from Google DeepMind)**.
+*   **Scientific Design & Responsibility**: The core research hypotheses, scientific design, empirical data collection, and qualitative UI insights (such as task ambiguity observations) are the sole intellectual product and scientific responsibility of the human researcher (thesis author).
+

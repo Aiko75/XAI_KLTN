@@ -107,3 +107,10 @@ To analyze the factors modulating **Automation Bias** and **Cognitive Load**, th
     *   *Touch Dynamics*: Measures click/tap holding durations (hesitation) and rage taps (user frustration/impatience).
 
 The combination of the three experimental interfaces ($A, B, C$) with these user segmentation variables will supply a rich data matrix for ANOVA and Chi-Square statistical tests in the thesis results.
+
+---
+
+### AI Collaboration & Attribution Statement
+*   **Technical Support & Drafting**: This document was compiled, structured, and translated with the assistance of **Antigravity (Advanced Agentic Coding Assistant from Google DeepMind)**.
+*   **Scientific Design & Responsibility**: The core research objectives, experimental hypotheses, empirical data collection, and qualitative UI insights (such as task workflow ambiguity observations) are the sole intellectual product and scientific responsibility of the human researcher (thesis author).
+

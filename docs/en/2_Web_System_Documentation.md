@@ -60,3 +60,10 @@ To capture granular human behavior before decisions are finalized, the system re
 *   **NASA-TLX Survey**: Collects six-dimensional workload ratings upon completing all 20 scenarios.
 
 Data is saved to the PostgreSQL database on Supabase via the Prisma schema.
+
+---
+
+### AI Collaboration & Attribution Statement
+*   **Technical Support & Drafting**: This document was compiled, structured, and translated with the assistance of **Antigravity (Advanced Agentic Coding Assistant from Google DeepMind)**.
+*   **Scientific Design & Responsibility**: The core research objectives, experimental hypotheses, empirical data collection, and qualitative UI insights (such as task workflow ambiguity observations) are the sole intellectual product and scientific responsibility of the human researcher (thesis author).
+

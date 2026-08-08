@@ -43,3 +43,21 @@ Việc bổ dung thêm bảng giả lập What-If bên cạnh biểu đồ Force
     *   Sự cạn kiệt tài nguyên chú ý dẫn đến trạng thái mệt mỏi tinh thần, khiến họ dễ bỏ qua các chi tiết bất thường cố ý gài vào hồ sơ (trap/adversarial cases).
 *   **Triết lý thiết kế XAI đề xuất**: 
     Khóa luận khẳng định thiết kế giải thích AI cần tuân theo triết lý **"Less is More"**. Giải thích không nên là sự nhồi nhét thông tin phức tạp, mà nên được thiết kế dưới dạng phân cấp hiển thị (progressive disclosure) - chỉ kích hoạt What-If hoặc Chatbot khi người dùng yêu cầu hoặc khi mô hình phát hiện sự không chắc chắn (low confidence).
+
+---
+
+## 4. Phát hiện 4: Hạn chế về Thiết kế Giao diện Thực nghiệm & Điều chỉnh Quy mô Mẫu Giai đoạn 2
+
+### Hạn chế 1: Sự mơ hồ trong Quy trình Tương tác Giao diện (Interface Ambiguity)
+*   **Vấn đề**: Qua đợt chạy thử sơ bộ, nhóm nghiên cứu phát hiện giao diện thực nghiệm tồn tại một sự mơ hồ nhất định về mặt nhận thức (cognitive ambiguity). Người tham gia khảo sát không lập tức định hình được quy trình thẩm định tối ưu: họ nên nhìn vào đâu trước, phân tích những chỉ số nào, và đối chiếu ra sao để đưa ra quyết định.
+*   **Thiết kế lý tưởng**: Thông tin khoản vay đề xuất (Loan details) và thông tin hồ sơ cá nhân của khách hàng (Customer credit profile) cần được phân chia thành hai khu vực trực quan tách biệt hoàn toàn. Giao diện nên nêu rõ chỉ dẫn: *"Người dùng cần thẩm định tính hợp lý của số tiền vay so với năng lực tài chính trước, sau đó đối chiếu với các chỉ số rủi ro của khách hàng làm căn cứ phê duyệt hoặc từ chối"*.
+*   **Giải pháp ghi nhận**: Do hệ thống thực nghiệm hiện tại đã được phân phối diện rộng để thu thập số liệu thực tế nên không thể can thiệp chỉnh sửa mã nguồn giao diện để tránh làm sai lệch tính đồng nhất của mẫu. Yếu tố này được ghi nhận như một **Hạn chế về mặt Thiết kế Giao diện Thực nghiệm (Experimental UI Limitation)** trong Khóa luận và sẽ được đưa vào chương thảo luận để phân tích ảnh hưởng của sự mơ hồ này đến thời gian ra quyết định (Decision Time) và mức độ ức chế (Frustration) trên thang đo NASA-TLX.
+
+### Hạn chế 2: Điều chỉnh Quy mô Mẫu Tối thiểu (Sample Size Threshold Adjustment)
+*   **Vấn đề**: Mục tiêu ban đầu là thu thập dữ liệu từ 60-100 người dùng thực tế. Tuy nhiên, việc tiếp cận đối tượng tham gia gặp khó khăn do bài test gồm 20 tình huống chi tiết đòi hỏi thời gian tập trung cao độ (khoảng 15-20 phút), có thể ảnh hưởng đến tiến độ nộp bài (deadline).
+*   **Giải pháp điều chỉnh**: Để đảm bảo tiến độ khóa luận và chất lượng dữ liệu thực tế thu được, **mục tiêu số lượng mẫu tối thiểu (mức sàn) được điều chỉnh xuống 40 người**. 
+*   **Ý nghĩa thống kê**: Cỡ mẫu tối thiểu $N = 40$ (khoảng 13-15 người mỗi nhóm giao diện A, B, C) hoàn toàn đáp ứng yêu cầu kỹ thuật tối thiểu để thực hiện các kiểm định thống kê phi tham số (như Wilcoxon signed-rank test hoặc Kruskal-Wallis test) nhằm tìm ra sự khác biệt có ý nghĩa thống kê giữa các nhóm trong nghiên cứu HCI.
+
+### Hạn chế 3: Sự Đồng nhất Nhân khẩu học về Độ tuổi (Demographic Homogeneity Limitation)
+*   **Vấn đề**: Dữ liệu từ thực nghiệm ghi nhận hơn 90% đối tượng tham gia thuộc nhóm tuổi **18-22 (Độ tuổi sinh viên)** do khảo sát được chia sẻ chủ yếu trong mạng lưới sinh viên đại học. Điều này tạo nên sự đồng nhất quá lớn về mặt nhân khẩu học.
+*   **Học thuật hóa**: Yếu tố này được ghi nhận như một **Hạn chế nhân khẩu học (Demographic Limitation)** rõ ràng trong phần Thảo luận (Discussion). Sinh viên có thể có khả năng thích nghi công nghệ nhanh hơn và xử lý các biểu đồ XAI trực quan tốt hơn so với nhóm dân số trung niên (> 45 tuổi) - những người có thể phụ thuộc hoặc hoài nghi thuật toán theo các chiều hướng khác. Do đó, kết quả nghiên cứu đại diện tốt nhất cho phân khúc người thẩm định trẻ tuổi và cần thận trọng khi tổng quát hóa (generalization) cho toàn bộ lực lượng lao động ngành ngân hàng.

@@ -104,3 +104,10 @@ Dựa trên kết quả thử nghiệm sơ bộ, nghiên cứu đề xuất 3 h�
     *   *Động lực học chạm (Touch Dynamics)*: Ghi nhận thời gian giữ chạm trung bình (touch duration) thể hiện sự phân vân và số lần chạm dồn dập (rage taps) thể hiện sự ức chế với giao diện.
 
 Sự kết hợp giữa 3 nhóm giao diện thực nghiệm ($A, B, C$) và các biến phân khúc người dùng này sẽ cung cấp ma trận dữ liệu phong phú cho các kiểm định thống kê ANOVA và Chi-Square trong phần kết quả thực tế của luận văn.
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+

@@ -113,3 +113,10 @@ $$f(x) = E[f(X)] + \sum_{i=1}^{M} \phi_i(x)$$
 *   Nếu $\phi_i > 0$ (Xanh lục): Đặc trưng kéo xác suất duyệt vay cao hơn mức trung bình của toàn hệ thống (Điểm cộng).
 *   Nếu $\phi_i < 0$ (Đỏ): Đặc trưng kéo giảm xác suất duyệt vay thấp hơn mức trung bình (Điểm trừ rủi ro).
 Quy tắc cộng nhất quán này giúp cho giao diện giải thích đạt được tính minh bạch và nhất quán toán học tuyệt đối, loại bỏ hoàn toàn các lỗi mâu thuẫn số liệu hiển thị trên giao diện người dùng.
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+

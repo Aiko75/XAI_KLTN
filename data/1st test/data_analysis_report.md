@@ -91,3 +91,10 @@ Bạn có thể viết một đoạn mã Python ngắn (dùng Google Colab):
 2. Huấn luyện một mô hình phân loại đơn giản như **LightGBM** hoặc **XGBoost**.
 3. Sử dụng thư viện `shap` (`shap.TreeExplainer`) để tính toán SHAP values chính xác cho 20 hồ sơ tín dụng mẫu.
 4. Trích xuất các hệ số SHAP này ghi đè vào file `scenarios.json`. Việc này sẽ giúp dữ liệu giải thích SHAP của khóa luận có độ chính xác khoa học tuyệt đối.
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+

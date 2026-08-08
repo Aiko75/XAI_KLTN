@@ -67,3 +67,10 @@ Số liệu từ 14 người dùng hoàn thành toàn bộ 20 câu:
 3. **Cải tiến thanh tiến độ (Gamification để giảm dropout):**
    * Thêm các câu khích lệ nhỏ khi hoàn thành mỗi 5 câu (ví dụ: *"Tuyệt vời! Bạn đã hoàn thành 25% chặng đường"*).
    * Cho phép người dùng tạm dừng (Pause) và tiếp tục sau nếu bài test quá dài (tuy nhiên việc này có thể ảnh hưởng đến tính liên tục của đo lường thời gian).
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+

@@ -43,3 +43,21 @@ Adding the What-If widget alongside SHAP Force Plots, Bar Charts, and Chatbots i
     *   This mental depletion causes cognitive fatigue, making users miss adversarial cases or intentional trap profiles.
 *   **Proposed XAI Design Philosophy**:
     The thesis concludes that XAI design must follow the **"Less is More"** paradigm. Rather than overloading the interface, explanations should employ **progressive disclosure**—only revealing advanced tools like What-If panels or chatbots upon user demand or when the AI indicates low decision confidence.
+
+---
+
+## 4. Finding 4: Experimental Interface Design Limitations & Sample Size Threshold Adjustments
+
+### Limitation 1: Cognitive Ambiguity in User Task Workflow (Interface Ambiguity)
+*   **Issue**: During pilot testing, the research team identified a certain level of cognitive ambiguity in the experimental interface. Participants did not immediately understand their optimal workflow: which panel to focus on first, what parameters to analyze, and how to weigh the metrics before making a decision.
+*   **Ideal Design**: The requested loan details (Loan Amount) and the customer's financial capacity profile (Income, Credit Score, DTI) should be split into two visually distinct sections. The interface should have stated explicit instructions: *"Assess the feasibility of the loan size compared to the financial capacity first, then cross-reference with the customer's risk factors to approve or reject."*
+*   **Thesis Implications**: Since the current experiment is already distributed and collecting active data, changing the UI code is avoided to prevent sample discrepancy. This factor is documented as an **Experimental UI Limitation** and will be analyzed in the discussion chapter regarding its impact on decision times and frustration levels on NASA-TLX.
+
+### Limitation 2: Minimal Sample Size Threshold Adjustment
+*   **Issue**: The initial target was to collect 60-100 real subjects. However, because the test requires evaluating 20 detailed scenarios requiring 15-20 minutes of high concentration, reaching this sample size within the graduation deadline presents a practical bottleneck.
+*   **Adjustment**: To ensure timely submission and maintain data collection quality, **the minimal target sample size (floor) is adjusted to 40 participants**.
+*   **Statistical Validity**: A sample size of $N = 40$ (roughly 13-15 users per Group A, B, C) meets the minimal requirement for running non-parametric statistical tests (such as Wilcoxon signed-rank or Kruskal-Wallis tests) to extract statistically significant behavioral variances in HCI.
+
+### Limitation 3: Age Demographic Homogeneity
+*   **Issue**: The empirical data indicates that over 90% of the participants belong to the **18-22 age group (student age)**, due to the survey being primarily distributed within university networks. This creates a high level of demographic homogeneity.
+*   **Thesis Implications**: This is documented as a clear **Demographic Limitation** in the Discussion chapter. Students may exhibit higher technology readiness and visual processing fluency with SHAP graphs compared to older cohorts (> 45 years), who might express algorithmic trust or skepticism differently. Thus, findings are representative of a tech-literate, younger demographic, and caution should be exercised when generalizing findings to the broader banking workforce.

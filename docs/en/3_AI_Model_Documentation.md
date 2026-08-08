@@ -94,3 +94,10 @@ SHAP values are calculated using cooperative game theory to measure the contribu
     Where $\phi_i$ is the SHAP value of feature $i$.
 *   **Emerald Bars (+)**: Positive drivers that increase the likelihood of approval.
 *   **Red Bars (-)**: Risk drivers that pull down the probability of approval.
+
+---
+
+### AI Collaboration & Attribution Statement
+*   **Technical Support & Drafting**: This document was compiled, structured, and translated with the assistance of **Antigravity (Advanced Agentic Coding Assistant from Google DeepMind)**.
+*   **Scientific Design & Responsibility**: The core research objectives, experimental hypotheses, empirical data collection, and qualitative UI insights (such as task workflow ambiguity observations) are the sole intellectual product and scientific responsibility of the human researcher (thesis author).
+

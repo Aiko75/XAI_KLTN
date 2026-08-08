@@ -75,3 +75,10 @@ Hệ thống tích hợp một logger lắng nghe sự kiện ở Frontend và �
 Truy cập tại `/admin/export`:
 *   Hiển thị danh sách toàn bộ các lượt sinh viên tham gia thực nghiệm.
 *   Hỗ trợ tải xuống tệp dữ liệu CSV chuẩn hóa chứa đầy đủ các cột đo lường hành vi (`time_spent_seconds`, `hover_count`, `hover_details`, `chat_count`, `chat_history`, `is_correct_on_error_case`) phục vụ cho việc nhập liệu vào phần mềm phân tích thống kê (SPSS/R) của khóa luận.
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+

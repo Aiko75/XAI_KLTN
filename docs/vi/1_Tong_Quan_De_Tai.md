@@ -65,3 +65,10 @@ Hệ thống sử dụng bộ dữ liệu gồm **20 kịch bản hồ sơ tín 
 *   **Thời gian ra quyết định (Decision Time)**: Đo lường chi tiết thời gian (giây) xử lý từng kịch bản để phân tích gánh nặng nhận thức.
 *   **Chỉ số tải nhận thức NASA-TLX**: Bản khảo sát 6 chiều (Đòi hỏi trí óc, áp lực thời gian, hiệu suất tự đánh giá, mức độ nỗ lực, mức độ thất vọng, đòi hỏi thể chất) thực hiện ở cuối buổi kiểm thử.
 *   **Dữ liệu lưu vết hành vi (HCI Interactive Logs)**: Lưu vết số lần và vị trí di chuột (hover), thời gian đọc tài liệu hướng dẫn, và lịch sử câu hỏi chat với chatbot AI để phân tích sâu thói quen khai thác thông tin của người thẩm định.
+
+---
+
+### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
+*   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+
