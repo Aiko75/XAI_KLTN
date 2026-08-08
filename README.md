@@ -17,7 +17,9 @@ This platform tests these dynamics using 20 credit underwriting scenarios contai
 ---
 
 ## 2. Research Methodology & Statistical Design
-For the complete academic framework and equations, refer to [Research_Methodology_and_Statistical_Design.md](data/2nd%20test/Research_Methodology_and_Statistical_Design.md) ([Vietnamese DOCX version](data/2nd%20test/Research_Methodology_and_Statistical_Design.docx)).
+For the complete academic framework and equations, refer to the following documents:
+*   **English version**: [Research_Methodology_and_Statistical_Design.md](docs/en/Research_Methodology_and_Statistical_Design.md) ([Word DOCX version](docs/en/Research_Methodology_and_Statistical_Design.docx))
+*   **Vietnamese version**: [Research_Methodology_and_Statistical_Design.md](docs/vi/Research_Methodology_and_Statistical_Design.md) ([Word DOCX version](docs/vi/Research_Methodology_and_Statistical_Design.docx))
 
 ### Summary for Quick Reading:
 The empirical study uses a **$3 \times 2$ mixed factorial design** to analyze how Explainable AI layout complexities impact credit underwriter behaviors:

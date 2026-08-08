@@ -135,11 +135,13 @@ if __name__ == "__main__":
         "vi/3_Tai_Lieu_Mo_Hinh_AI.md",
         "vi/4_Bao_Cao_Thuc_Nghiem_So_Bo.md",
         "vi/5_Phat_Hien_Nghien_Cuu_Moi_Phase_2.md",
+        "vi/Research_Methodology_and_Statistical_Design.md",
         "en/1_Project_Overview.md",
         "en/2_Web_System_Documentation.md",
         "en/3_AI_Model_Documentation.md",
         "en/4_Pilot_Experiment_Report.md",
         "en/5_New_Research_Findings_Phase_2.md",
+        "en/Research_Methodology_and_Statistical_Design.md",
         "test/local_test_analysis.md"
     ]
 
