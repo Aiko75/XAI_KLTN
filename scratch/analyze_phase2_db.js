@@ -47,7 +47,7 @@ async function run() {
       userLogsMap[log.user_id].push(log);
     });
 
-    // 1. DATA CLEANING: 5-TIER FILTERING ALGORITHM (CORRECTED TIER 5)
+    // 1. DATA CLEANING: 4-TIER TIME-BASED FILTERING ALGORITHM (NO TIER 5 / NO STRAIGHT-LINING EXCLUSION)
     const rawCompletes = allUsers.filter(u => u.end_time !== null);
     const dropouts = allUsers.filter(u => u.end_time === null);
     
@@ -62,7 +62,7 @@ async function run() {
       const uLogs = userLogsMap[u.user_id] || [];
       const g = u.group_assigned;
       
-      // Tier 1: Group threshold
+      // Tier 1: Group threshold (reading time per scenario)
       const threshold = g === 'A' ? 2.0 : g === 'B' ? 3.0 : 4.0;
 
       const sortedLogs = [...uLogs].sort((a, b) => a.scenario_id - b.scenario_id);
@@ -100,25 +100,7 @@ async function run() {
         return;
       }
 
-      // Tier 5: Straight-lining check ONLY applied to UNTRUNCATED completes (validLogs.length === 20)
-      if (validLogs.length === 20) {
-        const decisionCounts = {};
-        validLogs.forEach(l => {
-          const dec = String(l.user_decision || '').toLowerCase().trim();
-          decisionCounts[dec] = (decisionCounts[dec] || 0) + 1;
-        });
-        const maxRepetitive = Math.max(...Object.values(decisionCounts), 0);
-        const ratio = maxRepetitive / 20;
-
-        // Straight-lining threshold: 20/20 identical choices (100% repetitive)
-        if (maxRepetitive === 20) {
-          excludedUsers.push({
-            user: u,
-            reason: `Straight-lining tuyệt đối 20/20 câu trùng nhau (100%)`
-          });
-          return;
-        }
-      }
+      // NO TIER 5: Straight-lining check is completely removed as requested!
 
       // Record valid clean complete
       userCleanLogsMap[u.user_id] = validLogs;
@@ -135,22 +117,62 @@ async function run() {
 
     const totalCleanUsers = [...fullCleanCompletes, ...partialCleanCompletes.map(p => p.user)];
 
-    // Output 5-Tier filter results to terminal
+    // Output 4-Tier filter results to terminal
     console.log(`\n==================================================`);
-    console.log(`📊 KẾT QUẢ ÁP DỤNG THUẬT TOÁN LỌC 5 TẦNG (ĐÃ SỬA TẦNG 5):`);
+    console.log(`📊 KẾT QUẢ ÁP DỤNG THUẬT TOÁN LỌC 4 TẦNG (TIME-BASED FILTERING):`);
     console.log(`   - Tổng đăng ký: ${allUsers.length} người`);
     console.log(`   - Tổng hoàn thành gốc: ${rawCompletes.length} người`);
     console.log(`   - Dữ liệu sạch 20/20 câu: ${fullCleanCompletes.length} người`);
     console.log(`   - Dữ liệu cắt một phần (dùng 10-19 câu): ${partialCleanCompletes.length} người`);
-    console.log(`   - Loại hoàn toàn (Spam/Collapse sớm): ${excludedUsers.length} người`);
+    console.log(`   - Loại hoàn toàn (Sụp đổ sớm < 10 câu): ${excludedUsers.length} người`);
     console.log(`==================================================\n`);
 
     if (excludedUsers.length > 0) {
-      console.log(`🚨 Danh sách ${excludedUsers.length} người dùng bị loại:`);
+      console.log(`🚨 Danh sách ${excludedUsers.length} người dùng bị loại (Do sụp đổ sớm):`);
       excludedUsers.forEach(ex => {
         console.log(`   - ID: ${ex.user.user_id}, Tên: "${ex.user.name}", Nhóm: ${ex.user.group_assigned}, Lý do: ${ex.reason}`);
       });
     }
+
+    // 2. TRAP DETECTION SCORE CALCULATION FOR EACH RETAINED USER
+    const trapScenarios = [1, 8, 11, 16];
+    const userTrapScores = {};
+    const groupTrapScores = { A: [], B: [], C: [] };
+
+    totalCleanUsers.forEach(u => {
+      const g = u.group_assigned;
+      const vLogs = userCleanLogsMap[u.user_id] || [];
+      let trapCorrect = 0;
+      let trapTotal = 0;
+
+      vLogs.forEach(l => {
+        if (trapScenarios.includes(l.scenario_id)) {
+          trapTotal++;
+          if (l.is_correct_on_error_case === true) {
+            trapCorrect++;
+          }
+        }
+      });
+
+      userTrapScores[u.user_id] = {
+        correct: trapCorrect,
+        total: trapTotal,
+        str: `${trapCorrect}/${trapTotal}`,
+        pct: trapTotal > 0 ? Math.round((trapCorrect / trapTotal) * 100) : 0
+      };
+
+      if (trapTotal > 0) {
+        groupTrapScores[g].push(trapCorrect / trapTotal);
+      }
+    });
+
+    const avgTrapScorePerGroup = g => {
+      const arr = groupTrapScores[g];
+      if (arr.length === 0) return '0.0 / 4 (0%)';
+      const meanPct = arr.reduce((s, v) => s + v, 0) / arr.length;
+      const meanScore = (meanPct * 4).toFixed(1);
+      return `${meanScore} / 4 (${Math.round(meanPct * 100)}%)`;
+    };
 
     // Retention Rate per Group calculation
     const groupRegistered = { A: 0, B: 0, C: 0 };
@@ -184,25 +206,7 @@ async function run() {
     const avgChat = g => totalGCleanUsers(g) > 0 ? (groupChats[g] / totalGCleanUsers(g)).toFixed(2) : '0.00';
     const avgClick = g => totalGCleanUsers(g) > 0 ? (groupClicks[g] / totalGCleanUsers(g)).toFixed(2) : '0.00';
 
-    // Trap Accuracy calculation on valid clean logs
-    const trapScenarios = [1, 4, 8, 11, 14, 16];
-    const groupTrapTotal = { A: 0, B: 0, C: 0 };
-    const groupTrapCorrect = { A: 0, B: 0, C: 0 };
-
-    totalCleanUsers.forEach(u => {
-      const g = u.group_assigned;
-      const vLogs = userCleanLogsMap[u.user_id] || [];
-      vLogs.forEach(l => {
-        if (trapScenarios.includes(l.scenario_id)) {
-          groupTrapTotal[g]++;
-          if (l.is_correct_on_error_case === true) {
-            groupTrapCorrect[g]++;
-          }
-        }
-      });
-    });
-
-    // 2. DROPOUT DEEP-DIVE ANALYSIS
+    // 3. DROPOUT DEEP-DIVE ANALYSIS
     const dropoutDetails = dropouts.map(u => {
       const uLogs = userLogsMap[u.user_id] || [];
       const sorted = [...uLogs].sort((a, b) => a.scenario_id - b.scenario_id);
@@ -242,63 +246,50 @@ async function run() {
     const correctPct = totalComprehensionChecked > 0 ? Math.round((correctComprehensionCount / totalComprehensionChecked) * 100) : 0;
     const misunderstoodPct = totalComprehensionChecked > 0 ? Math.round((misunderstoodComprehensionCount / totalComprehensionChecked) * 100) : 0;
 
-    // 3. Generate Markdown Report
+    // 4. Generate Markdown Report
     let md = `# BÁO CÁO PHÂN TÍCH DỮ LIỆU THỰC NGHIỆM GIAI ĐOẠN 2 (REAL-TIME DATA REPORT)
 *Thời gian xuất báo cáo: ${new Date().toLocaleString('vi-VN')} (Giờ Việt Nam)*
 
-> [!WARNING]
-> **Hạn chế thực nghiệm & Cỡ mẫu nhỏ (Research Limitations)**:
-> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn đang tích lũy (mục tiêu sàn N >= 40), các tỷ lệ phần trăm (%) hiển thị chỉ mang tính chất **gợi mở xu hướng (exploratory)**, không trích dẫn như kết luận cứng cho đến khi hoàn thành thực nghiệm và kiểm định GEE/GLMM.
-> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22 (Demographic Homogeneity Limitation) cần được khai báo trong phần Thảo luận (Discussion).
-> 3. **Ánh xạ Ý nghĩa Nút bấm & Phân tích Độ nhạy (Sensitivity Analysis)**: 
->    * Giao diện dùng nhãn "Đồng ý/Từ chối đề xuất của AI" tạo rủi ro nhiễu nhận thức đảo ngược (Response-Mapping Ambiguity).
->    * **Phân tích độ nhạy**: Do nhãn nút nhất quán ở cả 3 nhóm, sai số này mang tính chất **ngẫu nhiên không thiên lệch (non-differential measurement error)**. Nó chỉ làm giảm độ nhạy phát hiện hiệu ứng (attenuation bias / giảm effect size) chứ không làm đảo ngược hướng của các giả thuyết nghiên cứu chính.
->    * **Kiểm chứng định lượng thực tế**: Đã bổ sung câu hỏi Comprehension Check ở cuối bài cho các đối tượng mới. Kết quả kiểm tra hiện tại: **${totalComprehensionChecked}** đối tượng đã trả lời kiểm tra (${correctComprehensionCount} người chọn đúng ~${correctPct}%, ${misunderstoodComprehensionCount} người hiểu nhầm ~${misunderstoodPct}%).
-
-> [!NOTE]
-> **Cơ chế Lọc 5 Tầng (5-Tier Data Filtering Algorithm - Đã hiệu chỉnh Tầng 5)**:
-> Báo cáo này áp dụng thuật toán lọc 5 tầng tiên tiến:
+> [!IMPORTANT]
+> **Bộ Lọc Lọc 4 Tầng Dựa Trên Thời Gian (4-Tier Time-Based Filter)**:
+> Báo cáo này áp dụng bộ lọc chính thức 4 tầng dựa trên thời gian đọc và điểm sụp đổ nhận thức:
 > *   **Tầng 1**: Ngưỡng thời gian đọc tối thiểu theo giao diện (A >= 2.0s, B >= 3.0s, C >= 4.0s).
-> *   **Tầng 2**: Phát hiện điểm sụp đổ nhận thức (Collapse Point - chuỗi >= 3 câu liên tiếp dưới ngưỡng).
+> *   **Tầng 2**: Phát hiện điểm sụp đổ nhận thức (Collapse Point - chuỗi >= 3 câu liên tiếp dưới ngưỡng thời gian).
 > *   **Tầng 3**: Cắt dữ liệu liền mạch từ điểm sụp đổ đến hết bài.
 > *   **Tầng 4**: Loại bỏ hoàn toàn người dùng nếu số câu hợp lệ < 10.
-> *   **Tầng 5**: Kiểm tra Straight-lining (>= 80% trùng đáp án) **chỉ áp dụng cho những người chưa bị cắt** (giữ nguyên đủ 20 câu gốc).
+> *(Lưu ý: Tầng 5 kiểm tra trùng lặp đáp án đã được xóa bỏ hoàn toàn để bảo toàn biến phụ thuộc phát hiện bẫy AI).*
 
 ---
 
-## 1. Phân tích Tỷ lệ Giữ chân & Lọc Dữ liệu theo Nhóm Giao diện (5-Tier Filter Results)
+## 1. Phân tích Tỷ lệ Giữ chân & Lọc Dữ liệu theo Nhóm Giao diện (4-Tier Time Filter Results)
 
-| Nhóm Giao diện | Đăng ký (Registered) | Hoàn thành gốc (Completed) | Giữ được sau Lọc 5 Tầng | Tỷ lệ giữ chân sau lọc (%) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Nhóm A (Black-box)** | ${groupRegistered.A} | ${groupCompleted.A} | **${groupRetained.A}** | **~${getPct(groupRetained.A, groupCompleted.A)}%** |
-| **Nhóm B (Static XAI)** | ${groupRegistered.B} | ${groupCompleted.B} | **${groupRetained.B}** | **~${getPct(groupRetained.B, groupCompleted.B)}%** |
-| **Nhóm C (Interactive XAI)** | ${groupRegistered.C} | ${groupCompleted.C} | **${groupRetained.C}** | **~${getPct(groupRetained.C, groupCompleted.C)}%** |
-| **TỔNG CỘNG** | **${allUsers.length}** | **${rawCompletes.length}** | **${totalCleanUsers.length}** | **~${getPct(totalCleanUsers.length, rawCompletes.length)}%** |
+| Nhóm Giao diện | Đăng ký (Registered) | Hoàn thành gốc (Completed) | Giữ được sau Lọc 4 Tầng | Tỷ lệ giữ chân sau lọc (%) | Điểm Phát Hiện Bẫy Trung Bình (/4) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | ${groupRegistered.A} | ${groupCompleted.A} | **${groupRetained.A}** | **~${getPct(groupRetained.A, groupCompleted.A)}%** | **${avgTrapScorePerGroup('A')}** |
+| **Nhóm B (Static XAI)** | ${groupRegistered.B} | ${groupCompleted.B} | **${groupRetained.B}** | **~${getPct(groupRetained.B, groupCompleted.B)}%** | **${avgTrapScorePerGroup('B')}** |
+| **Nhóm C (Interactive XAI)** | ${groupRegistered.C} | ${groupCompleted.C} | **${groupRetained.C}** | **~${getPct(groupRetained.C, groupCompleted.C)}%** | **${avgTrapScorePerGroup('C')}** |
+| **TỔNG CỘNG** | **${allUsers.length}** | **${rawCompletes.length}** | **${totalCleanUsers.length}** | **~${getPct(totalCleanUsers.length, rawCompletes.length)}%** | — |
 
 ### Phân loại Người dùng Hoàn thành:
 *   **Dữ liệu hợp lệ 20/20 câu (Full Clean)**: ${fullCleanCompletes.length} người
 *   **Dữ liệu cắt một phần (Partial Clean - Giữ 10-19 câu)**: ${partialCleanCompletes.length} người
-*   **Loại hoàn toàn (Excluded Spammers/Early Collapse)**: ${excludedUsers.length} người
+*   **Loại hoàn toàn (Do sụp đổ sớm < 10 câu)**: ${excludedUsers.length} người
 
 ---
 
-## 2. Phân tích Chuyên sâu Nhóm Bỏ cuộc giữa chừng (Dropout Deep-Dive Analysis)
+## 2. BIẾN PHỤ THUỘ TRUNG TÂM: ĐÔ CHÍNH XÁC PHÁT HIỆN BẪY AI (TRAP DETECTION ACCURACY)
 
-*Tổng số người dùng bỏ cuộc (ngắt kết nối giữa chừng): **${dropouts.length}** người (~${getPct(dropouts.length, allUsers.length)}% trên tổng số đăng ký).*
+*Bẫy AI gồm 4 kịch bản (#1, #8, #11, #16) nơi phán quyết AI mâu thuẫn với Ground Truth ngân hàng.*
 
-### 2.1. Tỷ lệ Bỏ cuộc theo Nhóm Giao diện
-*   **Nhóm A (Black-box AI)**: ${dropoutGroupCounts.A} người bỏ dở
-*   **Nhóm B (Static XAI)**: ${dropoutGroupCounts.B} người bỏ dở
-*   **Nhóm C (Interactive XAI)**: ${dropoutGroupCounts.C} người bỏ dở
-
-### 2.2. Giai đoạn Bỏ cuộc (Where Participants Dropped Out)
-${Object.entries(dropoutStageCounts).map(([stage, count]) => `*   **Giai đoạn ${stage}**: ${count} người (~${getPct(count, dropouts.length)}%)`).join('\n')}
+| Nhóm Giao diện | Số người sạch | Điểm Bẫy Trung Bình (/4) | Tỷ lệ Phát Hiện Bẫy (%) | Bác bỏ Bẫy / Tổng bẫy |
+| :--- | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | ${groupRetained.A} | **${avgTrapScorePerGroup('A')}** | **~${Math.round((groupTrapScores.A.reduce((s,v)=>s+v,0)/(groupTrapScores.A.length||1))*100)}%** | ${totalCleanUsers.filter(u=>u.group_assigned==='A').reduce((s,u)=>s+userTrapScores[u.user_id].correct,0)} / ${totalCleanUsers.filter(u=>u.group_assigned==='A').reduce((s,u)=>s+userTrapScores[u.user_id].total,0)} |
+| **Nhóm B (Static XAI)** | ${groupRetained.B} | **${avgTrapScorePerGroup('B')}** | **~${Math.round((groupTrapScores.B.reduce((s,v)=>s+v,0)/(groupTrapScores.B.length||1))*100)}%** | ${totalCleanUsers.filter(u=>u.group_assigned==='B').reduce((s,u)=>s+userTrapScores[u.user_id].correct,0)} / ${totalCleanUsers.filter(u=>u.group_assigned==='B').reduce((s,u)=>s+userTrapScores[u.user_id].total,0)} |
+| **Nhóm C (Interactive XAI)** | ${groupRetained.C} | **${avgTrapScorePerGroup('C')}** | **~${Math.round((groupTrapScores.C.reduce((s,v)=>s+v,0)/(groupTrapScores.C.length||1))*100)}%** | ${totalCleanUsers.filter(u=>u.group_assigned==='C').reduce((s,u)=>s+userTrapScores[u.user_id].correct,0)} / ${totalCleanUsers.filter(u=>u.group_assigned==='C').reduce((s,u)=>s+userTrapScores[u.user_id].total,0)} |
 
 ---
 
 ## 3. Chỉ số Hành vi & Tương tác HCI (Valid Clean Data)
-
-*Tính toán dựa trên các bản ghi phản hồi HỢP LỆ từ ${totalCleanUsers.length} người dùng sạch sau khi lọc 5 tầng.*
 
 | Nhóm Giao diện | Thời gian ra quyết định / câu | Số lượt hover / người | Số câu hỏi chatbot / người | Số tương tác What-if / người |
 | :--- | :---: | :---: | :---: | :---: |
@@ -308,21 +299,28 @@ ${Object.entries(dropoutStageCounts).map(([stage, count]) => `*   **Giai đoạn
 
 ---
 
-## 4. Độ chính xác Phát hiện Bẫy AI (Cognitive Trust Calibration)
+## 4. Phân tích Chuyên sâu Nhóm Bỏ cuộc giữa chừng (Dropout Deep-Dive)
 
-| Nhóm Giao diện | Bác bỏ Bẫy thành công / Tổng số bẫy | Tỷ lệ phát hiện lỗi AI (%) |
-| :--- | :---: | :---: |
-| **Nhóm A (Black-box)** | ${groupTrapCorrect.A} / ${groupTrapTotal.A} | **~${getPct(groupTrapCorrect.A, groupTrapTotal.A)}%** |
-| **Nhóm B (Static XAI)** | ${groupTrapCorrect.B} / ${groupTrapTotal.B} | **~${getPct(groupTrapCorrect.B, groupTrapTotal.B)}%** |
-| **Nhóm C (Interactive)** | ${groupTrapCorrect.C} / ${groupTrapTotal.C} | **~${getPct(groupTrapCorrect.C, groupTrapTotal.C)}%** |
+*Tổng số người dùng bỏ cuộc giữa chừng: **${dropouts.length}** người (~${getPct(dropouts.length, allUsers.length)}% trên tổng đăng ký).*
+
+### Tỷ lệ Bỏ cuộc theo Nhóm Giao diện
+*   **Nhóm A (Black-box AI)**: ${dropoutGroupCounts.A} người bỏ dở
+*   **Nhóm B (Static XAI)**: ${dropoutGroupCounts.B} người bỏ dở
+*   **Nhóm C (Interactive XAI)**: ${dropoutGroupCounts.C} người bỏ dở
 
 ---
 
-## 5. Danh sách Người dùng Giữ lại sau Lọc (Clean Completes Roster)
+## 5. DANH SÁCH NGƯỜI DÙNG SẠCH & ĐIỂM PHÁT HIỆN BẪY (CLEAN ROSTER & TRAP SCORE)
+
+*Bảng tổng hợp chi tiết kết quả từng cá nhân sạch được giữ lại cho phân tích thống kê:*
+
+| STT | Tên Người Dùng | ID Người Dùng | Nhóm Giao Diện | **Số Bẫy Phát Hiện Đúng (/4)** | Tỷ Lệ Phát Hiện Bẫy (%) | Trạng Thái Dữ Liệu |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
 ${totalCleanUsers.map((u, i) => {
+  const ts = userTrapScores[u.user_id];
   const p = partialCleanCompletes.find(item => item.user.user_id === u.user_id);
-  const statusStr = p ? `Cắt một phần (Giữ ${p.validCount}/20 câu - Collapse tại câu ${p.collapseScenario})` : 'Giữ đủ 20/20 câu';
-  return `*   **[${i + 1}]** ${u.name || 'Không tên'} (ID: ${u.user_id}) - Nhóm: **${u.group_assigned}** | Trạng thái: ${statusStr}`;
+  const statusStr = p ? `Cắt một phần (Giữ ${p.validCount}/20 câu)` : 'Giữ đủ 20/20 câu';
+  return `| **${i + 1}** | ${u.name || 'Không tên'} | \`${u.user_id}\` | **${u.group_assigned}** | **${ts.str}** | **${ts.pct}%** | ${statusStr} |`;
 }).join('\n')}
 
 ---

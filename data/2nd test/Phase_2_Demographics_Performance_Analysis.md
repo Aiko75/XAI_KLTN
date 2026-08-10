@@ -1,5 +1,5 @@
 # BÁO CÁO PHÂN TÍCH HIỆU NĂNG THEO PHÂN KHÚC NGƯỜI DÙNG & NGHỀ NGHIỆP
-*Thời gian xuất báo cáo: 14:13:33 9/8/2026 (Giờ Việt Nam)*
+*Thời gian xuất báo cáo: 07:45:06 10/8/2026 (Giờ Việt Nam)*
 
 > [!WARNING]
 > **Hạn chế thực nghiệm & Cỡ mẫu nhỏ (Research Limitations)**:
@@ -9,36 +9,36 @@
 
 > [!NOTE]
 > **Cơ chế Lọc 5 Tầng (5-Tier Data Filtering Algorithm)**:
-> Báo cáo này áp dụng bộ lọc tự động 5 tầng để loại bỏ triệt để hiện tượng sụp đổ nhận thức (Collapse Point) và làm ẩu. Dữ liệu được tính toán trên các phản hồi HỢP LỆ từ 26 người dùng sạch.
+> Báo cáo này áp dụng bộ lọc tự động 5 tầng để loại bỏ triệt để hiện tượng sụp đổ nhận thức (Collapse Point) và làm ẩu. Dữ liệu được tính toán trên các phản hồi HỢP LỆ từ 27 người dùng sạch.
 
 ---
 
-## 1. Phân tích theo Nhóm Nghề nghiệp / Lĩnh vực (Occupational Analysis)
+## 1. So sánh Hiệu năng theo Ngành học (Academic Major Comparison)
 
-| Nhóm Nghề nghiệp | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Ngành học | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
-| **STEM / Công nghệ (Tech/IT)** | 11 | 12.65s | **19%** | 0.00 |
-| **Kinh tế / Tài chính / Ngân hàng** | 1 | 24.12s | **17%** | 0.00 |
-| **Khác (Xã hội / Sức khỏe / Nghệ thuật)** | 14 | 29.81s | **23%** | 0.00 |
+| **STEM / Công nghệ (Tech/IT)** | 12 | 12.83s | **1.2 / 4 (30%)** | 0.0 |
+| **Kinh tế / Tài chính / Ngân hàng** | 1 | 24.12s | **1.0 / 4 (25%)** | 0.0 |
+| **Khác (Xã hội / Sức khỏe / Nghệ thuật)** | 14 | 29.81s | **1.4 / 4 (34%)** | 0.0 |
 
 ---
 
 ## 2. Phân tích theo Tần suất Sử dụng AI (AI Experience Exposure)
 
-| Tần suất Sử dụng AI | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Tần suất Sử dụng AI | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Hàng ngày / Thường xuyên** | 15 | 14.51s | **20%** | 0.00 |
-| **Thỉnh thoảng / Đôi khi** | 6 | 15.17s | **33%** | 0.00 |
-| **Hiếm khi / Chưa bao giờ** | 5 | 54.62s | **7%** | 0.00 |
+| **Hàng ngày / Thường xuyên** | 16 | 14.52s | **1.3 / 4 (32%)** | 0.0 |
+| **Thỉnh thoảng / Đôi khi** | 6 | 15.17s | **2.0 / 4 (50%)** | 0.0 |
+| **Hiếm khi / Chưa bao giờ** | 5 | 54.62s | **0.4 / 4 (10%)** | 0.0 |
 
 ---
 
 ## 3. Phân tích theo Loại Thiết bị Thực nghiệm (Device Impact Analysis)
 
-| Loại Thiết bị | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Loại Thiết bị | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Desktop / Laptop** | 15 | 25.23s | **20%** | 0.00 |
-| **Mobile / Phone** | 11 | 19.12s | **21%** | 0.00 |
+| **Desktop / Laptop** | 15 | 25.23s | **1.2 / 4 (31%)** | 0.0 |
+| **Mobile / Phone** | 12 | 18.75s | **1.3 / 4 (33%)** | 0.0 |
 
 ---
 
@@ -46,9 +46,9 @@
 
 | Nhóm Giao diện | Số lượng hợp lệ (n) | Thời gian ra quyết định / câu | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Nhóm A (Black-box)** | 11 | 21.50s | **23%** | 0.00 |
-| **Nhóm B (Static XAI)** | 9 | 21.76s | **23%** | 0.00 |
-| **Nhóm C (Interactive XAI)** | 6 | 25.83s | **14%** | 0.00 |
+| **Nhóm A (Black-box)** | 11 | 21.50s | **undefined** | 0.0 |
+| **Nhóm B (Static XAI)** | 10 | 21.02s | **undefined** | 0.0 |
+| **Nhóm C (Interactive XAI)** | 6 | 25.83s | **undefined** | 0.0 |
 
 ---
 

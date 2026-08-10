@@ -88,29 +88,18 @@ async function run() {
       // Tier 4: Minimum valid scenarios check (< 10 -> exclude)
       if (validLogs.length < 10) return;
 
-            // Tier 5: Straight-lining check ONLY applied to UNTRUNCATED completes (validLogs.length === 20)
-      if (validLogs.length === 20) {
-        const decisionCounts = {};
-        validLogs.forEach(l => {
-          const dec = String(l.user_decision || '').toLowerCase().trim();
-          decisionCounts[dec] = (decisionCounts[dec] || 0) + 1;
-        });
-        const maxRepetitive = Math.max(...Object.values(decisionCounts), 0);
-
-        if (maxRepetitive === 20) return;
-      }
-
+      // NO TIER 5: Straight-lining check removed as requested
       userCleanLogsMap[u.user_id] = validLogs;
       cleanCompletes.push(u);
     });
 
-    console.log(`Analyzing performance of ${cleanCompletes.length} CLEAN completed participants (5-Tier Filtered)...`);
+    console.log(`Analyzing performance of ${cleanCompletes.length} CLEAN completed participants (4-Tier Time Filtered)...`);
 
-    const trapScenarios = [1, 4, 8, 11, 14, 16];
+    const trapScenarios = [1, 8, 11, 16];
 
     function calculateGroupMetrics(subsetUsers) {
       if (subsetUsers.length === 0) {
-        return { count: 0, avgTime: 'N/A', trapAcc: 'N/A', avgLoad: 'N/A' };
+        return { count: 0, avgTime: 'N/A', trapScoreStr: '0.0 / 4 (0%)', avgLoad: 'N/A' };
       }
 
       let totalTime = 0;
@@ -143,13 +132,14 @@ async function run() {
       });
 
       const avgTime = logCount > 0 ? (totalTime / logCount).toFixed(2) + 's' : 'N/A';
-      const trapAcc = trapTotal > 0 ? Math.round((trapCorrect / trapTotal) * 100) + '%' : 'N/A';
-      const avgLoad = surveyCount > 0 ? (totalLoadSum / surveyCount).toFixed(2) : 'N/A';
+      const trapPct = trapTotal > 0 ? trapCorrect / trapTotal : 0;
+      const trapScoreStr = `${(trapPct * 4).toFixed(1)} / 4 (${Math.round(trapPct * 100)}%)`;
+      const avgLoad = surveyCount > 0 ? (totalLoadSum / surveyCount).toFixed(1) : 'N/A';
 
       return {
         count: subsetUsers.length,
         avgTime,
-        trapAcc,
+        trapScoreStr,
         avgLoad
       };
     }
@@ -220,41 +210,41 @@ async function run() {
 
 ---
 
-## 1. Phân tích theo Nhóm Nghề nghiệp / Lĩnh vực (Occupational Analysis)
+## 1. So sánh Hiệu năng theo Ngành học (Academic Major Comparison)
 
-| Nhóm Nghề nghiệp | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Ngành học | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
     Object.entries(categories).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapScoreStr}** | ${m.avgLoad} |\n`;
     });
 
     md += `\n---
 
 ## 2. Phân tích theo Tần suất Sử dụng AI (AI Experience Exposure)
 
-| Tần suất Sử dụng AI | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Tần suất Sử dụng AI | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
     Object.entries(freqCategories).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapScoreStr}** | ${m.avgLoad} |\n`;
     });
 
     md += `\n---
 
 ## 3. Phân tích theo Loại Thiết bị Thực nghiệm (Device Impact Analysis)
 
-| Loại Thiết bị | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Loại Thiết bị | Số lượng (n) | Thời gian ra quyết định trung bình | Điểm Bẫy Trung Bình (/4) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
     Object.entries(devices).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapScoreStr}** | ${m.avgLoad} |\n`;
     });
 
     md += `\n---
