@@ -2,8 +2,6 @@
 
 An empirical Human-Computer Interaction (HCI) research platform designed to evaluate the impact of different Explainable AI (XAI) fidelity levels on human **Automation Bias** (Blind Trust) and **Cognitive Workload** in high-stakes credit underwriting.
 
-This repository is structured for review by **Professor Naomi** (Kyoto University) and partners.
-
 ---
 
 ## 1. Research Objectives & Context
