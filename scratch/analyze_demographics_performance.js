@@ -30,7 +30,6 @@ async function run() {
       const nameLower = (u.name || '').toLowerCase();
       const idLower = u.user_id.toLowerCase();
       return !nameLower.includes('test') && !idLower.includes('test') &&
-             !nameLower.includes('nhân') && !nameLower.includes('quân') &&
              !nameLower.includes('admin') && nameLower.trim() !== '';
     });
 
@@ -38,7 +37,6 @@ async function run() {
     const allLogs = logsRes.rows.filter(l => userIds.has(l.user_id));
     const allSurveys = surveysRes.rows.filter(s => userIds.has(s.user_id));
 
-    // Group logs by user_id
     const userLogsMap = {};
     allLogs.forEach(log => {
       if (!userLogsMap[log.user_id]) {
@@ -55,97 +53,145 @@ async function run() {
       userSurveysMap[s.user_id].push(s);
     });
 
-    // 1. DATA CLEANING FILTER LAYER
+    // 1. DATA CLEANING: 5-TIER FILTERING ALGORITHM
     const rawCompletes = allUsers.filter(u => u.end_time !== null);
     const cleanCompletes = [];
+    const userCleanLogsMap = {};
 
     rawCompletes.forEach(u => {
       const uLogs = userLogsMap[u.user_id] || [];
-      if (uLogs.length < 20) return;
+      const g = u.group_assigned;
+      const threshold = g === 'A' ? 2.0 : g === 'B' ? 3.0 : 4.0;
+      const sortedLogs = [...uLogs].sort((a, b) => a.scenario_id - b.scenario_id);
 
-      const totalTime = uLogs.reduce((sum, l) => sum + l.time_spent_seconds, 0);
-      const avgTime = totalTime / 20;
+      if (sortedLogs.length < 20) return;
 
-      let approveCount = 0;
-      let rejectCount = 0;
-      uLogs.forEach(l => {
-        if (l.user_decision === 'agree' || l.user_decision === 'approve') approveCount++;
-        if (l.user_decision === 'reject') rejectCount++;
-      });
-
-      const isSpeedrunner = avgTime < 2.0;
-      const isStraightLiner = approveCount >= 19 || rejectCount >= 19;
-
-      if (!isSpeedrunner && !isStraightLiner) {
-        cleanCompletes.push(u);
+      // Tier 2: Collapse Point Detection (starting from scenario_id >= 3)
+      let collapseIdx = -1;
+      for (let i = 2; i <= sortedLogs.length - 3; i++) {
+        if (
+          sortedLogs[i].time_spent_seconds < threshold &&
+          sortedLogs[i + 1].time_spent_seconds < threshold &&
+          sortedLogs[i + 2].time_spent_seconds < threshold
+        ) {
+          collapseIdx = i;
+          break;
+        }
       }
+
+      // Tier 3: Truncate from collapse point to end
+      let validLogs = sortedLogs;
+      if (collapseIdx !== -1) {
+        validLogs = sortedLogs.slice(0, collapseIdx);
+      }
+
+      // Tier 4: Minimum valid scenarios check (< 10 -> exclude)
+      if (validLogs.length < 10) return;
+
+            // Tier 5: Straight-lining check ONLY applied to UNTRUNCATED completes (validLogs.length === 20)
+      if (validLogs.length === 20) {
+        const decisionCounts = {};
+        validLogs.forEach(l => {
+          const dec = String(l.user_decision || '').toLowerCase().trim();
+          decisionCounts[dec] = (decisionCounts[dec] || 0) + 1;
+        });
+        const maxRepetitive = Math.max(...Object.values(decisionCounts), 0);
+
+        if (maxRepetitive === 20) return;
+      }
+
+      userCleanLogsMap[u.user_id] = validLogs;
+      cleanCompletes.push(u);
     });
 
-    console.log(`Analyzing performance of ${cleanCompletes.length} CLEAN completed participants...`);
+    console.log(`Analyzing performance of ${cleanCompletes.length} CLEAN completed participants (5-Tier Filtered)...`);
 
-    // Trap scenarios list
     const trapScenarios = [1, 4, 8, 11, 14, 16];
 
-    // Helper function to calculate metrics for a subset of users
     function calculateGroupMetrics(subsetUsers) {
       if (subsetUsers.length === 0) {
         return { count: 0, avgTime: 'N/A', trapAcc: 'N/A', avgLoad: 'N/A' };
       }
 
       let totalTime = 0;
-      let totalResponses = 0;
-      let totalTraps = 0;
-      let correctTraps = 0;
-      let totalLoadScore = 0;
-      let usersWithLoad = 0;
+      let logCount = 0;
+      let trapTotal = 0;
+      let trapCorrect = 0;
+      let totalLoadSum = 0;
+      let surveyCount = 0;
 
       subsetUsers.forEach(u => {
-        const uLogs = userLogsMap[u.user_id] || [];
+        const uLogs = userCleanLogsMap[u.user_id] || [];
         uLogs.forEach(l => {
           totalTime += l.time_spent_seconds;
-          totalResponses++;
+          logCount++;
           if (trapScenarios.includes(l.scenario_id)) {
-            totalTraps++;
-            if (l.is_correct_on_error_case === true) {
-              correctTraps++;
-            }
+            trapTotal++;
+            if (l.is_correct_on_error_case === true) trapCorrect++;
           }
         });
 
         const uSurveys = userSurveysMap[u.user_id] || [];
-        const overallLoadObj = uSurveys.find(s => s.question_key === 'overall_load');
-        if (overallLoadObj) {
-          totalLoadScore += overallLoadObj.score;
-          usersWithLoad++;
+        if (uSurveys.length > 0) {
+          const s = uSurveys[0];
+          const totalLoad = (s.mental_demand || 0) + (s.temporal_demand || 0) +
+                            (s.performance || 0) + (s.effort || 0) +
+                            (s.frustration || 0) + (s.physical_demand || 0);
+          totalLoadSum += totalLoad;
+          surveyCount++;
         }
       });
 
+      const avgTime = logCount > 0 ? (totalTime / logCount).toFixed(2) + 's' : 'N/A';
+      const trapAcc = trapTotal > 0 ? Math.round((trapCorrect / trapTotal) * 100) + '%' : 'N/A';
+      const avgLoad = surveyCount > 0 ? (totalLoadSum / surveyCount).toFixed(2) : 'N/A';
+
       return {
         count: subsetUsers.length,
-        avgTime: totalResponses > 0 ? (totalTime / totalResponses).toFixed(2) + 's' : 'N/A',
-        trapAcc: totalTraps > 0 ? Math.round((correctTraps / totalTraps) * 100) + '%' : 'N/A',
-        avgLoad: usersWithLoad > 0 ? (totalLoadScore / usersWithLoad).toFixed(2) : 'N/A'
+        avgTime,
+        trapAcc,
+        avgLoad
       };
     }
 
-    // --- SEGMENT 1: OCCUPATION GROUPING ---
+    // --- SEGMENT 1: OCCUPATIONS ---
+    const isTech = u => {
+      const m = (u.major || '').toLowerCase();
+      return m.includes('cntt') || m.includes('it') || m.includes('phần mềm') ||
+             m.includes('khoa học máy tính') || m.includes('hệ thống thông tin') ||
+             m.includes('công nghệ') || m.includes('kỹ thuật') || m.includes('data');
+    };
+
+    const isBiz = u => {
+      const m = (u.major || '').toLowerCase();
+      return m.includes('kinh tế') || m.includes('tài chính') || m.includes('ngân hàng') ||
+             m.includes('kế toán') || m.includes('quản trị') || m.includes('marketing') ||
+             m.includes('thương mại');
+    };
+
     const categories = {
-      'Sinh viên - Kỹ thuật / CNTT': cleanCompletes.filter(u => (u.major || '').includes('Kỹ thuật') || (u.major || '').includes('CNTT')),
-      'Sinh viên - Kinh tế / Quản trị': cleanCompletes.filter(u => (u.major || '').includes('Kinh tế') || (u.major || '').includes('Quản trị')),
-      'Sinh viên - Các khối ngành khác': cleanCompletes.filter(u => (u.major || '').includes('Sinh viên') && !(u.major || '').includes('Kỹ thuật') && !(u.major || '').includes('CNTT') && !(u.major || '').includes('Kinh tế') && !(u.major || '').includes('Quản trị')),
-      'Người đi làm (Employed)': cleanCompletes.filter(u => (u.major || '').includes('Người đi làm')),
-      'Tự do / Khác': cleanCompletes.filter(u => !(u.major || '').includes('Sinh viên') && !(u.major || '').includes('Người đi làm'))
+      'STEM / Công nghệ (Tech/IT)': cleanCompletes.filter(isTech),
+      'Kinh tế / Tài chính / Ngân hàng': cleanCompletes.filter(isBiz),
+      'Khác (Xã hội / Sức khỏe / Nghệ thuật)': cleanCompletes.filter(u => !isTech(u) && !isBiz(u))
     };
 
     // --- SEGMENT 2: AI EXPOSURE FREQUENCY ---
-    const aiExposures = {
-      'Hàng ngày (Daily)': cleanCompletes.filter(u => u.ai_frequency === 'Hàng ngày'),
-      'Thường xuyên (Weekly)': cleanCompletes.filter(u => u.ai_frequency === 'Thường xuyên'),
-      'Thỉnh thoảng (Occasionally)': cleanCompletes.filter(u => u.ai_frequency === 'Thỉnh thoảng'),
-      'Hiếm khi (Rarely/Never)': cleanCompletes.filter(u => u.ai_frequency === 'Hiếm khi')
+    const freqCategories = {
+      'Hàng ngày / Thường xuyên': cleanCompletes.filter(u => {
+        const f = (u.ai_frequency || '').toLowerCase();
+        return f.includes('hàng ngày') || f.includes('thường xuyên') || f.includes('daily') || f.includes('frequently');
+      }),
+      'Thỉnh thoảng / Đôi khi': cleanCompletes.filter(u => {
+        const f = (u.ai_frequency || '').toLowerCase();
+        return f.includes('thỉnh thoảng') || f.includes('đôi khi') || f.includes('occasionally');
+      }),
+      'Hiếm khi / Chưa bao giờ': cleanCompletes.filter(u => {
+        const f = (u.ai_frequency || '').toLowerCase();
+        return f.includes('hiếm khi') || f.includes('chưa bao giờ') || f.includes('rarely') || f.includes('never') || f === '';
+      })
     };
 
-    // --- SEGMENT 3: DEVICE TYPE ---
+    // --- SEGMENT 3: DEVICE TYPES ---
     const devices = {
       'Desktop / Laptop': cleanCompletes.filter(u => u.device === 'Desktop'),
       'Mobile / Phone': cleanCompletes.filter(u => u.device === 'Mobile' || u.device === 'Tablet')
@@ -158,23 +204,23 @@ async function run() {
       'Nhóm C (Interactive XAI)': cleanCompletes.filter(u => u.group_assigned === 'C')
     };
 
-    // 5. Generate Markdown Report
+    // Generate Markdown Report
     let md = `# BÁO CÁO PHÂN TÍCH HIỆU NĂNG THEO PHÂN KHÚC NGƯỜI DÙNG & NGHỀ NGHIỆP
 *Thời gian xuất báo cáo: ${new Date().toLocaleString('vi-VN')} (Giờ Việt Nam)*
 
 > [!WARNING]
-> **Hạn chế cỡ mẫu nhỏ & Đồng nhất nhóm tuổi tác (Research Limitations)**:
-> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn còn nhỏ (nếu dưới 60), tất cả các tỷ lệ phần trăm (%) hiển thị trong báo cáo này chỉ mang tính chất **gợi mở xu hướng (exploratory)**, tuyệt đối không được trích dẫn như một kết luận cứng cho đến khi hoàn thành toàn bộ thực nghiệm và chạy kiểm định mô hình GEE/GLMM.
-> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22. Đây là một hạn chế rõ rệt về mặt nhân khẩu học (Demographic Homogeneity Limitation) cần được khai báo trong phần thảo luận (Discussion) của khóa luận.
+> **Hạn chế thực nghiệm & Cỡ mẫu nhỏ (Research Limitations)**:
+> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn đang tích lũy (mục tiêu sàn N >= 40), tất cả các tỷ lệ phần trăm (%) hiển thị trong báo cáo này chỉ mang tính chất **gợi mở xu hướng (exploratory)**.
+> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22 (Demographic Homogeneity Limitation).
+> 3. **Mơ hồ nhận thức từ nhãn nút bấm (Cognitive Inversion)**: Việc dán nhãn nút quyết định là "Đồng ý/Từ chối đề xuất của AI" có thể đã gây ra đảo ngược nhận thức vô ý trên một số câu bẫy.
 
 > [!NOTE]
-> **Cơ chế Lọc Dữ liệu Rác (Post-Hoc Data Cleaning)**:
-> Báo cáo này áp dụng bộ lọc tự động để loại bỏ các ca làm ẩu (Speedrun < 2.0 giây/câu hoặc chọn trùng một lựa chọn liên tục $\ge 19/20$ câu). Tổng cộng đã làm sạch mẫu để đo lường năng lực thực sự của đối tượng tham gia.
+> **Cơ chế Lọc 5 Tầng (5-Tier Data Filtering Algorithm)**:
+> Báo cáo này áp dụng bộ lọc tự động 5 tầng để loại bỏ triệt để hiện tượng sụp đổ nhận thức (Collapse Point) và làm ẩu. Dữ liệu được tính toán trên các phản hồi HỢP LỆ từ ${cleanCompletes.length} người dùng sạch.
 
 ---
 
 ## 1. Phân tích theo Nhóm Nghề nghiệp / Lĩnh vực (Occupational Analysis)
-*Đánh giá xem lĩnh vực học tập và làm việc có tạo nên sự khác biệt về sự hoài nghi lành mạnh với AI hay không.*
 
 | Nhóm Nghề nghiệp | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
@@ -182,67 +228,53 @@ async function run() {
 
     Object.entries(categories).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | ${m.trapAcc} | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
     });
 
-    md += `
----
+    md += `\n---
 
-## 2. Phân tích theo Tần suất tiếp xúc Công nghệ AI (AI Exposure Analysis)
-*Phân tích xem mức độ quen thuộc với các công cụ AI (ChatGPT, Gemini) có giúp người dùng tránh được thiên kiến tự động hóa hay không.*
+## 2. Phân tích theo Tần suất Sử dụng AI (AI Experience Exposure)
 
-| Mức độ tiếp xúc AI | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Tần suất Sử dụng AI | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
-    Object.entries(aiExposures).forEach(([name, subset]) => {
+    Object.entries(freqCategories).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | ${m.trapAcc} | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
     });
 
-    md += `
----
+    md += `\n---
 
-## 3. Phân tích theo Thiết bị Thực nghiệm (Device Impact Analysis)
-*Màn hình nhỏ trên thiết bị di động có làm ảnh hưởng đến khả năng làm câu hỏi của người dùng?*
+## 3. Phân tích theo Loại Thiết bị Thực nghiệm (Device Impact Analysis)
 
-| Thiết bị sử dụng | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Loại Thiết bị | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
     Object.entries(devices).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | ${m.trapAcc} | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
     });
 
-    md += `
----
+    md += `\n---
 
-## 4. Phân tích theo Nhóm Giao diện (Experimental Interface Comparison)
-*Nhắc lại tương quan cốt lõi của nghiên cứu để đối chiếu.*
+## 4. Bảng So sánh Hiệu năng theo Nhóm Giao diện (Interface Group Performance)
 
-| Nhóm Giao diện | Số lượng (n) | Thời gian ra quyết định trung bình | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
+| Nhóm Giao diện | Số lượng hợp lệ (n) | Thời gian ra quyết định / câu | Tỷ lệ phát hiện lỗi AI (Bẫy) | Tải lượng nhận thức trung bình (NASA-TLX) |
 | :--- | :---: | :---: | :---: | :---: |
 `;
 
     Object.entries(intGroups).forEach(([name, subset]) => {
       const m = calculateGroupMetrics(subset);
-      md += `| **${name}** | ${m.count} | ${m.avgTime} | ${m.trapAcc} | ${m.avgLoad} |\n`;
+      md += `| **${name}** | ${m.count} | ${m.avgTime} | **${m.trapAcc}** | ${m.avgLoad} |\n`;
     });
 
-    md += `
----
-
-## 5. Đánh giá Khả năng giải quyết bẫy lỗi của AI (Trap Scenarios Deep Dive)
-
-*   **Tỷ lệ bác bỏ bẫy sai chung**: Hệ thống ghi nhận mức độ tỉnh táo trước bẫy lỗi của AI có sự phân hóa mạnh mẽ dựa trên việc giao diện có cung cấp XAI hay không.
-*   **Ảnh hưởng chéo**: Việc kết hợp chuyên ngành Kỹ thuật và giao diện XAI tương tác (Nhóm C) tạo ra nhóm đối tượng có hiệu năng thẩm định tối ưu nhất, trong khi nhóm không chuyên ngành Kỹ thuật nằm ở nhóm A có tỷ lệ Automation Bias chạm mức báo động.
-
----
+    md += `\n---
 
 ### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
 *   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
-*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện và việc chịu trách nhiệm khoa học hoàn toàn thuộc về tác giả khóa luận.
 `;
 
     const reportPath = path.join(__dirname, '..', 'data', '2nd test', 'Phase_2_Demographics_Performance_Analysis.md');

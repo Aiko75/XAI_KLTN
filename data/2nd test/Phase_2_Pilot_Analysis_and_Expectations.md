@@ -86,7 +86,19 @@ Hệ thống Next.js tích hợp Supabase và Prisma Client đạt chất lượ
 *   **Mô tả hạn chế**: Dữ liệu từ thực nghiệm ghi nhận hơn 90% đối tượng tham gia thuộc nhóm tuổi **18-22 (Độ tuổi sinh viên)** do khảo sát được chia sẻ chủ yếu trong mạng lưới sinh viên đại học. 
 *   **Giải pháp ghi nhận cho luận văn**: Yếu tố này được ghi nhận như một **Hạn chế nhân khẩu học (Demographic Limitation)** rõ rệt trong phần thảo luận (Discussion) của khóa luận. Người trẻ (sinh viên) có khả năng thích nghi công nghệ nhanh hơn và tiếp thu các biểu đồ XAI trực quan tốt hơn so với nhóm dân số trung niên (> 45 tuổi) - những người có thể phụ thuộc hoặc hoài nghi thuật toán theo các chiều hướng khác. Kết quả nghiên cứu đại diện tốt nhất cho phân khúc người thẩm định trẻ tuổi và cần thận trọng khi tổng quát hóa cho toàn bộ lực lượng lao động.
 
+### Hạn chế về Ánh xạ Ý nghĩa Nút bấm (Response-Mapping Ambiguity) & Phân tích Độ nhạy (Sensitivity Analysis)
+*   **Hạn chế Ánh xạ Ý nghĩa Nút bấm**: Việc dán nhãn nút quyết định là *"Đồng ý đề xuất của AI"* / *"Từ chối đề xuất của AI"* thay vì trực tiếp *"Duyệt vay"* / *"Từ chối vay"* có thể khiến một số người tham gia hiểu nhầm, dẫn đến hiện tượng đảo ngược nhận thức (Cognitive Inversion).
+*   **Phân tích Độ nhạy (Sensitivity Analysis)**: 
+    *   Vì thiết kế nhãn nút bấm được giữ nguyên nhất quán xuyên suốt cả ba nhóm giao diện (A, B, C), rủi ro sai số này mang tính chất **phân bố ngẫu nhiên không thiên lệch (non-differential measurement error)**.
+    *   Sai số đo lường ngẫu nhiên không làm đảo ngược hướng của các giả thuyết nghiên cứu (hypothesized direction), mà chỉ làm giảm độ nhạy phát hiện khác biệt thực tế giữa các nhóm (**attenuation bias toward the null** / đánh giá thấp effect size).
+    *   Do đó, ngay cả khi giả định có $X\%$ lượt trả lời bị đảo ngược ngẫu nhiên, xu hướng tác động cốt lõi của XAI (giúp giảm Automation Bias) vẫn được duy trì đúng hướng.
+*   **Giải pháp Kiểm chứng Định lượng Chủ động (Proactive Comprehension Check)**:
+    *   Để biến một "hạn chế định tính không xác định" thành một "hạn chế có số liệu định lượng kiểm chứng đi kèm", nghiên cứu đã chèn thêm một **Câu hỏi kiểm tra sự hiểu (Comprehension Check)** trực tiếp ở cuối 20 kịch bản (ngay trước thang đo NASA-TLX) cho các đối tượng tham gia tiếp theo.
+    *   Câu hỏi này thu thập con số tỷ lệ phần trăm ($X\%$) hiểu nhầm thực tế trong mẫu, cung cấp bằng chứng định lượng chính xác để báo cáo trước Hội đồng bảo vệ luận văn.
+
+
 ---
+
 
 ### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
 *   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 

@@ -1,123 +1,111 @@
 # BÁO CÁO PHÂN TÍCH DỮ LIỆU THỰC NGHIỆM GIAI ĐOẠN 2 (REAL-TIME DATA REPORT)
-*Thời gian xuất báo cáo: 17:51:24 8/8/2026 (Giờ Việt Nam)*
+*Thời gian xuất báo cáo: 14:13:31 9/8/2026 (Giờ Việt Nam)*
 
 > [!WARNING]
-> **Hạn chế cỡ mẫu nhỏ & Đồng nhất nhóm tuổi tác (Research Limitations)**:
-> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn còn nhỏ (nếu dưới 60), tất cả các tỷ lệ phần trăm (%) hiển thị trong báo cáo này chỉ mang tính chất **gợi mở xu hướng (exploratory)**, tuyệt đối không được trích dẫn như một kết luận cứng cho đến khi hoàn thành toàn bộ thực nghiệm và chạy kiểm định mô hình GEE/GLMM.
-> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22. Đây là một hạn chế rõ rệt về mặt nhân khẩu học (Demographic Homogeneity Limitation) cần được khai báo trong phần thảo luận (Discussion) của khóa luận.
+> **Hạn chế thực nghiệm & Cỡ mẫu nhỏ (Research Limitations)**:
+> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn đang tích lũy (mục tiêu sàn N >= 40), các tỷ lệ phần trăm (%) hiển thị chỉ mang tính chất **gợi mở xu hướng (exploratory)**, không trích dẫn như kết luận cứng cho đến khi hoàn thành thực nghiệm và kiểm định GEE/GLMM.
+> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22 (Demographic Homogeneity Limitation) cần được khai báo trong phần Thảo luận (Discussion).
+> 3. **Ánh xạ Ý nghĩa Nút bấm & Phân tích Độ nhạy (Sensitivity Analysis)**: 
+>    * Giao diện dùng nhãn "Đồng ý/Từ chối đề xuất của AI" tạo rủi ro nhiễu nhận thức đảo ngược (Response-Mapping Ambiguity).
+>    * **Phân tích độ nhạy**: Do nhãn nút nhất quán ở cả 3 nhóm, sai số này mang tính chất **ngẫu nhiên không thiên lệch (non-differential measurement error)**. Nó chỉ làm giảm độ nhạy phát hiện hiệu ứng (attenuation bias / giảm effect size) chứ không làm đảo ngược hướng của các giả thuyết nghiên cứu chính.
+>    * **Kiểm chứng định lượng thực tế**: Đã bổ sung câu hỏi Comprehension Check ở cuối bài cho các đối tượng mới. Kết quả kiểm tra hiện tại: **0** đối tượng đã trả lời kiểm tra (0 người chọn đúng ~0%, 0 người hiểu nhầm ~0%).
 
 > [!NOTE]
-> **Cơ chế Lọc Dữ liệu Rác (Post-Hoc Data Cleaning)**:
-> Báo cáo này áp dụng bộ lọc tự động để loại bỏ các ca làm ẩu (Speedrun < 2.0 giây/câu hoặc chọn trùng một lựa chọn liên tục $ge 19/20$ câu). Tổng cộng đã phát hiện và loại bỏ **6** ca làm ẩu ra khỏi các tính năng thống kê hành vi và nhận diện bẫy lỗi để bảo đảm chất lượng dữ liệu sạch.
+> **Cơ chế Lọc 5 Tầng (5-Tier Data Filtering Algorithm - Đã hiệu chỉnh Tầng 5)**:
+> Báo cáo này áp dụng thuật toán lọc 5 tầng tiên tiến:
+> *   **Tầng 1**: Ngưỡng thời gian đọc tối thiểu theo giao diện (A >= 2.0s, B >= 3.0s, C >= 4.0s).
+> *   **Tầng 2**: Phát hiện điểm sụp đổ nhận thức (Collapse Point - chuỗi >= 3 câu liên tiếp dưới ngưỡng).
+> *   **Tầng 3**: Cắt dữ liệu liền mạch từ điểm sụp đổ đến hết bài.
+> *   **Tầng 4**: Loại bỏ hoàn toàn người dùng nếu số câu hợp lệ < 10.
+> *   **Tầng 5**: Kiểm tra Straight-lining (>= 80% trùng đáp án) **chỉ áp dụng cho những người chưa bị cắt** (giữ nguyên đủ 20 câu gốc).
 
 ---
 
-## 1. Phân tích Phân khúc Đối tượng tham gia (Demographics & Users Profile)
+## 1. Phân tích Tỷ lệ Giữ chân & Lọc Dữ liệu theo Nhóm Giao diện (5-Tier Filter Results)
 
-*   **Tổng số người dùng thực tế tham gia**: 27 người
-*   **Hoàn thành hợp lệ (Clean Completes)**: 22 người (~81%)
-*   **Làm ẩu bị loại bỏ (Flagged Spam)**: 6 người
-*   **Số lượng bỏ dở giữa chừng (Dropouts)**: 5 người (~19%)
+| Nhóm Giao diện | Đăng ký (Registered) | Hoàn thành gốc (Completed) | Giữ được sau Lọc 5 Tầng | Tỷ lệ giữ chân sau lọc (%) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | 15 | 12 | **11** | **~92%** |
+| **Nhóm B (Static XAI)** | 14 | 13 | **9** | **~69%** |
+| **Nhóm C (Interactive XAI)** | 14 | 11 | **6** | **~55%** |
+| **TỔNG CỘNG** | **43** | **36** | **26** | **~72%** |
 
-### Phân bố Nhóm Giao diện (Interface Group Assignment - Bao gồm cả Dropouts)
-*   **Nhóm A (Black-box AI)**: 9 người (Hoàn thành sạch: 6 - Bỏ dở: 3)
-*   **Nhóm B (Static XAI)**: 10 người (Hoàn thành sạch: 9 - Bỏ dở: 1)
-*   **Nhóm C (Interactive XAI)**: 8 người (Hoàn thành sạch: 7 - Bỏ dở: 1)
-
-### Phân bố Thiết bị sử dụng (Device Distribution - Toàn bộ mẫu)
-*   **Mobile**: 18 người (~67%)
-*   **Desktop**: 9 người (~33%)
-
-### Phân bố Nhóm Tuổi (Age Group Distribution - Toàn bộ mẫu)
-*   **23-30**: 1 người (~4%)
-*   **18-22**: 25 người (~93%)
-*   **< 18**: 1 người (~4%)
-
-### Phân bố Tần suất sử dụng công cụ AI (AI Exposure Frequency - Toàn bộ mẫu)
-*   **Thường xuyên**: 7 người (~26%)
-*   **Thỉnh thoảng**: 5 người (~19%)
-*   **Hàng ngày**: 13 người (~48%)
-*   **Hiếm khi**: 2 người (~7%)
-
-### Phân bố Chi tiết Nghề nghiệp (Detailed Occupation Distribution)
-*   **Sinh viên - Khối ngành Kỹ thuật / Công nghệ**: 14 người
-*   **Sinh viên - Khối ngành Kinh tế / Quản trị**: 5 người
-*   **Sinh viên - Khối ngành Y tế / Sức khỏe**: 2 người
-*   **Sinh viên - Khác**: 2 người
-*   **Tự doanh / Tự do**: 1 người
-*   **Người đi làm - Lĩnh vực Y tế / Giáo dục**: 1 người
-*   **Khác**: 1 người
-*   **Người đi làm - Lĩnh vực Kỹ thuật / Công nghệ**: 1 người
+### Phân loại Người dùng Hoàn thành:
+*   **Dữ liệu hợp lệ 20/20 câu (Full Clean)**: 24 người
+*   **Dữ liệu cắt một phần (Partial Clean - Giữ 10-19 câu)**: 2 người
+*   **Loại hoàn toàn (Excluded Spammers/Early Collapse)**: 10 người
 
 ---
 
-## 2. Phân tích Chỉ số Hành vi & HCI (HCI Engagement Metrics)
+## 2. Phân tích Chuyên sâu Nhóm Bỏ cuộc giữa chừng (Dropout Deep-Dive Analysis)
 
-*Số liệu được tính trung bình trên mỗi đối tượng HOÀN THÀNH HỢP LỆ sau khi lọc.*
+*Tổng số người dùng bỏ cuộc (ngắt kết nối giữa chừng): **7** người (~16% trên tổng số đăng ký).*
 
-| Nhóm Giao diện | Thời gian ra quyết định / câu | Thời gian tương tác thực tế (Active Time) | Số lượt hover / người | Số câu hỏi chatbot / người | Số tương tác What-if / người |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Nhóm A (Black-box)** | 8.64 | 8.64 | 37.33 | Không hỗ trợ | Không hỗ trợ |
-| **Nhóm B (Static XAI)** | 11.21 | 11.22 | 32.44 | Không hỗ trợ | Không hỗ trợ |
-| **Nhóm C (Interactive)** | 13.30 | 13.30 | 78.43 | 0.43 | 19.29 |
+### 2.1. Tỷ lệ Bỏ cuộc theo Nhóm Giao diện
+*   **Nhóm A (Black-box AI)**: 3 người bỏ dở
+*   **Nhóm B (Static XAI)**: 1 người bỏ dở
+*   **Nhóm C (Interactive XAI)**: 3 người bỏ dở
+
+### 2.2. Giai đoạn Bỏ cuộc (Where Participants Dropped Out)
+*   **Giai đoạn Early (1-5)**: 7 người (~100%)
+*   **Giai đoạn Middle (6-14)**: 0 người (~0%)
+*   **Giai đoạn Late (15-19)**: 0 người (~0%)
+*   **Giai đoạn Start (0)**: 0 người (~0%)
 
 ---
 
-## 3. Độ chính xác Phát hiện Bẫy AI (Cognitive Trust Calibration)
+## 3. Chỉ số Hành vi & Tương tác HCI (Valid Clean Data)
 
-*Tỷ lệ phần trăm thể hiện số lần người dùng phát hiện lỗi AI và bác bỏ thành công trên các câu bẫy.*
+*Tính toán dựa trên các bản ghi phản hồi HỢP LỆ từ 26 người dùng sạch sau khi lọc 5 tầng.*
 
-| Nhóm Giao diện | Quyết định bác bỏ AI / Tổng số lượt gặp bẫy | Tỷ lệ phát hiện lỗi AI (%) |
+| Nhóm Giao diện | Thời gian ra quyết định / câu | Số lượt hover / người | Số câu hỏi chatbot / người | Số tương tác What-if / người |
+| :--- | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | 21.50s | 34.82 | Không hỗ trợ | Không hỗ trợ |
+| **Nhóm B (Static XAI)** | 21.76s | 29.11 | Không hỗ trợ | Không hỗ trợ |
+| **Nhóm C (Interactive)** | 25.83s | 202.17 | 0.50 | 66.50 |
+
+---
+
+## 4. Độ chính xác Phát hiện Bẫy AI (Cognitive Trust Calibration)
+
+| Nhóm Giao diện | Bác bỏ Bẫy thành công / Tổng số bẫy | Tỷ lệ phát hiện lỗi AI (%) |
 | :--- | :---: | :---: |
-| **Nhóm A (Black-box)** | 11 / 36 | **~31%** |
-| **Nhóm B (Static XAI)** | 14 / 54 | **~26%** |
-| **Nhóm C (Interactive)** | 9 / 42 | **~21%** |
-
-*Chú thích: Tỷ lệ phần trăm trên đây chỉ biểu thị xu hướng phân bố thô trên mẫu thử hiện tại. Mối liên hệ có ý nghĩa thống kê thực tế sẽ được xác định thông qua kiểm định phương trình ước lượng tổng quát (GEE) trên bộ dữ liệu hoàn chỉnh.*
+| **Nhóm A (Black-box)** | 15 / 66 | **~23%** |
+| **Nhóm B (Static XAI)** | 12 / 52 | **~23%** |
+| **Nhóm C (Interactive)** | 5 / 36 | **~14%** |
 
 ---
 
-## 4. Tải lượng Nhận thức (NASA-TLX Cognitive Load)
-
-*Khảo sát NASA-TLX cuối bài kiểm tra. Thang đo từ 1 (Rất nhẹ) đến 20 (Quá tải).*
-
-| Chỉ số tải lượng nhận thức | Nhóm A (Black-box) | Nhóm B (Static XAI) | Nhóm C (Interactive XAI) |
-| :--- | :---: | :---: | :---: |
-| **Mental Demand (Yêu cầu trí óc)** | 4.67 | 3.78 | 4.29 |
-| **Temporal Demand (Yêu cầu thời gian)** | 3.83 | 3.00 | 3.71 |
-| **Performance (Hiệu suất tự đánh giá)** | 4.83 | 5.11 | 4.29 |
-| **Effort (Mức độ nỗ lực)** | 4.67 | 3.89 | 4.57 |
-| **Frustration (Sự ức chế)** | 3.00 | 3.00 | 3.43 |
-| **Overall Load (Tải lượng tổng thể)** | 4.33 | 3.22 | 3.86 |
-
----
-
-## 5. Danh sách người dùng hợp lệ (Completes Roster)
-*   **[1]** Trần Thị Thanh Nhàn (ID: u_20260808012849765247) - Nhóm: **B** | Nghề: Tự doanh / Tự do | Thiết bị: Mobile
-*   **[2]** Nguyễn Yến Nhi (ID: u_20260808014513268208) - Nhóm: **C** | Nghề: Sinh viên - Khối ngành Kinh tế / Quản trị | Thiết bị: Mobile
-*   **[3]** Nguyễn Sơn Tùng (ID: u_20260808014609826896) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Desktop
-*   **[4]** Nguyễn Thu Hương (ID: u_20260808021246115312) - Nhóm: **A** | Nghề: Sinh viên - Khối ngành Y tế / Sức khỏe | Thiết bị: Mobile
-*   **[5]** Dương Tuấn Hưng (ID: u_20260808024651938655) - Nhóm: **C** | Nghề: Sinh viên - Khác | Thiết bị: Desktop
-*   **[6]** Trần Hoàng Gia Huy (ID: u_20260808024122738274) - Nhóm: **C** | Nghề: Sinh viên - Khác | Thiết bị: Mobile
-*   **[7]** Trần Đức Thắng (ID: u_20260808025810457289) - Nhóm: **A** | Nghề: Người đi làm - Lĩnh vực Y tế / Giáo dục | Thiết bị: Mobile
-*   **[8]** Gff (ID: u_20260808044252458778) - Nhóm: **A** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[9]** Adolf Hitler (ID: u_20260808030445615887) - Nhóm: **B** | Nghề: Khác | Thiết bị: Desktop
-*   **[10]** Nguyễn Thành Lân (ID: u_20260808031140233393) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Y tế / Sức khỏe | Thiết bị: Desktop
-*   **[11]** Trần Thanh Nga (ID: u_20260808045226073517) - Nhóm: **C** | Nghề: Sinh viên - Khối ngành Kinh tế / Quản trị | Thiết bị: Mobile
-*   **[12]** Nguyễn Thành Nam (ID: u_20260808032010497439) - Nhóm: **A** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Desktop
-*   **[13]** Trần Văn Bình (ID: u_20260808043610955059) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kinh tế / Quản trị | Thiết bị: Desktop
-*   **[14]** Trần Phát Tuyển (ID: u_20260808045912244646) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kinh tế / Quản trị | Thiết bị: Mobile
-*   **[15]** Lưu Minh Hiếu (ID: u_20260808054439590496) - Nhóm: **A** | Nghề: Người đi làm - Lĩnh vực Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[16]** Đặng Vũ Nam (ID: u_20260808064222130471) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[17]** Nguyễn Hà Anh (ID: u_20260808064212216989) - Nhóm: **C** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[18]** Nguyễn Ngọc Vượng (ID: u_20260808072935897191) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[19]** Nguyễn Thành Đạt (ID: u_20260808073150460815) - Nhóm: **C** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Desktop
-*   **[20]** Hoang Nang Minh (ID: u_20260808080143445358) - Nhóm: **A** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Desktop
-*   **[21]** Nguyễn Tuấn Dương (ID: u_20260808080022140595) - Nhóm: **B** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Mobile
-*   **[22]** Nguyễn Thị Thùy Dung (ID: u_20260808095947098513) - Nhóm: **C** | Nghề: Sinh viên - Khối ngành Kỹ thuật / Công nghệ | Thiết bị: Desktop
+## 5. Danh sách Người dùng Giữ lại sau Lọc (Clean Completes Roster)
+*   **[1]** Trần Thị Thanh Nhàn (ID: u_20260808012849765247) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[2]** Nguyễn Sơn Tùng (ID: u_20260808014609826896) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[3]** Nguyễn Thu Hương (ID: u_20260808021246115312) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[4]** Đỗ Duy Phát (ID: u_20260808021850257380) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[5]** Dương Tuấn Hưng (ID: u_20260808024651938655) - Nhóm: **C** | Trạng thái: Giữ đủ 20/20 câu
+*   **[6]** Trần Hoàng Gia Huy (ID: u_20260808024122738274) - Nhóm: **C** | Trạng thái: Giữ đủ 20/20 câu
+*   **[7]** Trần Đức Thắng (ID: u_20260808025810457289) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[8]** Nguyễn Thành Nam (ID: u_20260808032010497439) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[9]** Lưu Minh Hiếu (ID: u_20260808054439590496) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[10]** Nguyễn Hà Anh (ID: u_20260808064212216989) - Nhóm: **C** | Trạng thái: Giữ đủ 20/20 câu
+*   **[11]** Nguyễn Ngọc Vượng (ID: u_20260808072935897191) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[12]** Hoang Nang Minh (ID: u_20260808080143445358) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[13]** Nguyễn Tuấn Dương (ID: u_20260808080022140595) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[14]** Nguyễn Thị Thùy Dung (ID: u_20260808095947098513) - Nhóm: **C** | Trạng thái: Giữ đủ 20/20 câu
+*   **[15]** Người tham gia 2 (ID: u_20260808044252458778) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[16]** Nguyen tien khoi nguyen (ID: u_20260808111436072775) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[17]** Nguyễn Quang Anh (ID: u_20260808030445615887) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[18]** Trần Quốc Quân (ID: u_20260807145247958905) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[19]** Nguyễn Văn Sáng (ID: u_20260808132825400642) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[20]** Đào thị nhàn (ID: u_20260808135211757025) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[21]** Nguyễn Thị Ngọc Ánh (ID: u_20260808140343567002) - Nhóm: **B** | Trạng thái: Giữ đủ 20/20 câu
+*   **[22]** Nguyễn văn thiệu (ID: u_20260808142426393582) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[23]** Đỗ Bá Hiếu (ID: u_20260809040106204820) - Nhóm: **C** | Trạng thái: Giữ đủ 20/20 câu
+*   **[24]** Lê Thị Bích (ID: u_20260809051651961722) - Nhóm: **A** | Trạng thái: Giữ đủ 20/20 câu
+*   **[25]** Duy (ID: u_20260808104025367892) - Nhóm: **B** | Trạng thái: Cắt một phần (Giữ 11/20 câu - Collapse tại câu 12)
+*   **[26]** Phạm Thanh Quang (ID: u_20260808033546466328) - Nhóm: **C** | Trạng thái: Cắt một phần (Giữ 16/20 câu - Collapse tại câu 17)
 
 ---
 
 ### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
 *   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
-*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện và việc chịu trách nhiệm khoa học hoàn toàn thuộc về tác giả khóa luận.

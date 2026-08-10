@@ -61,3 +61,45 @@ Việc bổ dung thêm bảng giả lập What-If bên cạnh biểu đồ Force
 ### Hạn chế 3: Sự Đồng nhất Nhân khẩu học về Độ tuổi (Demographic Homogeneity Limitation)
 *   **Vấn đề**: Dữ liệu từ thực nghiệm ghi nhận hơn 90% đối tượng tham gia thuộc nhóm tuổi **18-22 (Độ tuổi sinh viên)** do khảo sát được chia sẻ chủ yếu trong mạng lưới sinh viên đại học. Điều này tạo nên sự đồng nhất quá lớn về mặt nhân khẩu học.
 *   **Học thuật hóa**: Yếu tố này được ghi nhận như một **Hạn chế nhân khẩu học (Demographic Limitation)** rõ ràng trong phần Thảo luận (Discussion). Sinh viên có thể có khả năng thích nghi công nghệ nhanh hơn và xử lý các biểu đồ XAI trực quan tốt hơn so với nhóm dân số trung niên (> 45 tuổi) - những người có thể phụ thuộc hoặc hoài nghi thuật toán theo các chiều hướng khác. Do đó, kết quả nghiên cứu đại diện tốt nhất cho phân khúc người thẩm định trẻ tuổi và cần thận trọng khi tổng quát hóa (generalization) cho toàn bộ lực lượng lao động ngành ngân hàng.
+
+### Hạn chế 4: Ánh xạ Ý nghĩa Nút bấm (Response-Mapping Ambiguity) & Phân tích Độ nhạy (Sensitivity Analysis)
+*   **Vấn đề Ánh xạ (Response-Mapping Ambiguity)**: Giao diện thực nghiệm sử dụng hai nút *"Đồng ý với đề xuất của AI"* / *"Từ chối đề xuất của AI"* thay vì trực tiếp *"Duyệt vay"* / *"Từ chối vay"*. Có khả năng một số người tham gia hiểu nhầm ý nghĩa hai nút này như một quyết định thẩm định trực tiếp thay vì một phản hồi tương đối với đề xuất của AI, dẫn đến khả năng đảo ngược giá trị ghi nhận (Cognitive Inversion) so với ý định thật ở một số lượt trả lời không xác định được.
+*   **Phân tích Độ nhạy (Sensitivity Analysis)**: 
+    *   Vì thiết kế nhãn nút bấm được giữ nguyên nhất quán xuyên suốt cả ba nhóm giao diện (A, B, C), rủi ro sai số này mang tính chất **phân bố ngẫu nhiên không thiên lệch (non-differential measurement error)**.
+    *   Theo lý thuyết thống kê thực nghiệm, sai số đo lường ngẫu nhiên không làm đảo ngược hướng của các giả thuyết nghiên cứu (hypothesized direction), mà chỉ làm giảm độ nhạy phát hiện khác biệt thực tế giữa các nhóm (**attenuation bias toward the null** / đánh giá thấp effect size). 
+    *   Do đó, ngay cả khi giả định có $X\%$ lượt trả lời bị đảo ngược ngẫu nhiên, xu hướng tác động cốt lõi của XAI (giúp giảm Automation Bias) vẫn được duy trì đúng hướng.
+*   **Giải pháp Kiểm chứng Định lượng Chủ động (Proactive Comprehension Check)**:
+    *   Để biến một "hạn chế định tính không xác định" thành một "hạn chế có số liệu định lượng kiểm chứng đi kèm", nghiên cứu đã chèn thêm một **Câu hỏi kiểm tra sự hiểu (Comprehension Check)** trực tiếp ở cuối 20 kịch bản (ngay trước thang đo NASA-TLX) cho các đối tượng tham gia tiếp theo.
+    *   Câu hỏi này thu thập con số tỷ lệ phần trăm ($X\%$) hiểu nhầm thực tế trong mẫu, cung cấp bằng chứng định lượng chính xác để báo cáo trước Hội đồng bảo vệ luận văn.
+
+
+---
+
+## 5. Phát hiện 5: Cơ chế Lọc Dữ liệu 5 Tầng và Kỹ thuật Tuyển mẫu Không đều (Oversampling Group C)
+
+### 5.1. Thuật toán Lọc Dữ liệu 5 Tầng (5-Tier Data Filtering Algorithm)
+Nhằm loại bỏ triệt để hiện tượng sụp đổ nhận thức (Collapse Point) và làm ẩu, dữ liệu được xử lý qua 5 tầng nghiêm ngặt:
+1.  **Tầng 1 (Ngưỡng thời gian theo Giao diện)**: Thiết lập thời gian đọc tối thiểu dựa trên độ phức tạp thị giác: Nhóm A >= 2.0s, Nhóm B >= 3.0s, Nhóm C >= 4.0s.
+2.  **Tầng 2 (Nhận diện Điểm Sụp Đổ - Collapse Point)**: Quét từ câu thứ 3 trở đi, điểm sụp đổ được xác định tại vị trí đầu tiên xuất hiện **chuỗi >= 3 câu liên tiếp** có thời gian dưới ngưỡng tối thiểu.
+3.  **Tầng 3 (Cắt Dữ liệu Liền mạch)**: Cắt bỏ toàn bộ dữ liệu từ điểm sụp đổ đến hết câu 20. Ngoại lệ ngẫu nhiên đơn lẻ phía sau không được khôi phục nhằm bảo toàn tính đồng nhất của trạng thái hành vi.
+4.  **Tầng 4 (Kiểm tra Số lượng Hợp lệ Tối thiểu)**: Nếu số câu hợp lệ còn lại trước điểm sụp đổ **< 10/20 câu**, toàn bộ người dùng đó sẽ bị loại khỏi mẫu sạch.
+5.  **Tầng 5 (Kiểm tra Straight-lining trên phần hợp lệ)**: Áp dụng kiểm tra chọn duy nhất một đáp án (>= 80%) trên phần dữ liệu hợp lệ còn lại.
+
+### 5.2. Kỹ thuật Tuyển mẫu Không đều (Oversampling Group C)
+Kết quả áp dụng bộ lọc 5 tầng cho thấy Nhóm C có tỷ lệ sụp đổ nhận thức cao nhất (chỉ khoảng 54.5% người dùng giữ được dữ liệu so với >90% của Nhóm A). Nếu phân bổ mẫu ngẫu nhiên đều, Nhóm C sẽ bị thiếu hụt mẫu nghiêm trọng khi kết thúc thực nghiệm.
+
+**Giải pháp mã nguồn**: Backend hệ thống (`api/users/start`) đã được bổ sung **Trọng số phân bổ tuyển mẫu (Oversampling Weighting)** với hệ số điều chỉnh ($A = 1.0, B = 1.35, C = 1.85$). Hệ thống tự động ưu tiên điều hướng người dùng mới vào Nhóm C cho đến khi cỡ mẫu sạch giữa 3 nhóm đạt mức cân bằng tối ưu (~15-20 người sạch mỗi nhóm).
+
+---
+
+## 6. Phân tích Chuyên sâu Nhóm Bỏ cuộc giữa chừng (Dropout Deep-Dive Analysis)
+
+Nhóm nghiên cứu trích xuất dữ liệu của những người dùng ngắt kết nối giữa chừng (Dropouts) để phục vụ phân tích phụ trong chương Thảo luận (Discussion):
+
+*   **Tỷ lệ Bỏ cuộc theo Giao diện**: Nhóm C có tỷ lệ bỏ cuộc cao hơn hẳn Nhóm A và B. Đây là bằng chứng thực tế chứng minh giao diện XAI quá tải thông tin không chỉ khiến người dùng làm ẩu mà còn khiến họ **từ bỏ nhiệm vụ hoàn toàn (Complete Task Abandonment)**.
+*   **Giai đoạn Bỏ cuộc**: 
+    *   Bỏ cuộc tại **Giai đoạn Đầu (Câu 1-5)**: Đại diện cho hiện tượng **Sốc Giao diện (Information Shock)** do choợp ngợp trước biểu đồ phức tạp ngay lần đầu tiếp xúc.
+    *   Bỏ cuộc tại **Giai đoạn Giữa / Cuối (Câu 6-19)**: Đại diện cho sự **Tích lũy Mệt mỏi Nhận thức (Fatigue Accumulation)** sau thời gian dài suy nghĩ.
+*   **Ảnh hưởng của Thiết bị**: Người dùng truy cập trên thiết bị di động (Mobile) có tỷ lệ bỏ cuộc vượt trội do kích thước màn hình nhỏ gây khó khăn khi thao tác trên biểu đồ Force Plot.
+
+

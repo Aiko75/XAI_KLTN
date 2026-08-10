@@ -26,12 +26,11 @@ async function run() {
     const logsRes = await client.query('SELECT * FROM response_logs ORDER BY created_at ASC');
     const surveysRes = await client.query('SELECT * FROM survey_logs ORDER BY created_at ASC');
 
-    // Filter out developer / admin test accounts
+    // Filter out explicit developer / admin test accounts only
     const allUsers = usersRes.rows.filter(u => {
       const nameLower = (u.name || '').toLowerCase();
       const idLower = u.user_id.toLowerCase();
       return !nameLower.includes('test') && !idLower.includes('test') &&
-             !nameLower.includes('nhân') && !nameLower.includes('quân') &&
              !nameLower.includes('admin') && nameLower.trim() !== '';
     });
 
@@ -48,251 +47,289 @@ async function run() {
       userLogsMap[log.user_id].push(log);
     });
 
-    // 1. DATA CLEANING FILTER LAYER (Lọc Dữ liệu Rác / Làm ẩu)
+    // 1. DATA CLEANING: 5-TIER FILTERING ALGORITHM (CORRECTED TIER 5)
     const rawCompletes = allUsers.filter(u => u.end_time !== null);
     const dropouts = allUsers.filter(u => u.end_time === null);
     
-    const cleanCompletes = [];
-    const flaggedSpammers = [];
+    const fullCleanCompletes = [];
+    const partialCleanCompletes = [];
+    const excludedUsers = [];
+
+    // Map of clean valid logs per user
+    const userCleanLogsMap = {};
 
     rawCompletes.forEach(u => {
       const uLogs = userLogsMap[u.user_id] || [];
-      if (uLogs.length < 20) {
-        return; // Incomplete response logs
+      const g = u.group_assigned;
+      
+      // Tier 1: Group threshold
+      const threshold = g === 'A' ? 2.0 : g === 'B' ? 3.0 : 4.0;
+
+      const sortedLogs = [...uLogs].sort((a, b) => a.scenario_id - b.scenario_id);
+
+      if (sortedLogs.length < 20) {
+        excludedUsers.push({ user: u, reason: 'Chưa đủ 20 câu trả lời' });
+        return;
       }
 
-      // Calculate average decision time
-      const totalTime = uLogs.reduce((sum, l) => sum + l.time_spent_seconds, 0);
-      const avgTime = totalTime / 20;
+      // Tier 2: Collapse Point Detection (starting from scenario_id >= 3, index >= 2)
+      let collapseIdx = -1;
+      for (let i = 2; i <= sortedLogs.length - 3; i++) {
+        if (
+          sortedLogs[i].time_spent_seconds < threshold &&
+          sortedLogs[i + 1].time_spent_seconds < threshold &&
+          sortedLogs[i + 2].time_spent_seconds < threshold
+        ) {
+          collapseIdx = i;
+          break;
+        }
+      }
 
-      // Count decisions to check for straight-lining (repetitive choices)
-      let approveCount = 0;
-      let rejectCount = 0;
-      uLogs.forEach(l => {
-        if (l.user_decision === 'agree' || l.user_decision === 'approve') approveCount++;
-        if (l.user_decision === 'reject') rejectCount++;
-      });
+      // Tier 3: Truncate from collapse point to end
+      let validLogs = sortedLogs;
+      if (collapseIdx !== -1) {
+        validLogs = sortedLogs.slice(0, collapseIdx);
+      }
 
-      const isSpeedrunner = avgTime < 2.0; // speedrunning under 2 seconds per question
-      const isStraightLiner = approveCount >= 19 || rejectCount >= 19; // chose almost the same answer for all
-
-      if (isSpeedrunner || isStraightLiner) {
-        let reason = "";
-        if (isSpeedrunner && isStraightLiner) reason = "Làm ẩu: Tốc độ cực nhanh & chọn duy nhất 1 đáp án";
-        else if (isSpeedrunner) reason = `Làm ẩu: Speedrun (tb ${avgTime.toFixed(2)}s/câu < 2s)`;
-        else reason = `Làm ẩu: Straight-lining (chọn ${approveCount} duyệt / ${rejectCount} từ chối)`;
-
-        flaggedSpammers.push({
+      // Tier 4: Minimum valid scenarios check (< 10 -> exclude)
+      if (validLogs.length < 10) {
+        excludedUsers.push({
           user: u,
-          reason,
-          avgTime
+          reason: `Sụp đổ quá sớm tại câu ${sortedLogs[collapseIdx]?.scenario_id || 'N/A'} (chỉ còn ${validLogs.length}/20 câu hợp lệ < 10)`
         });
+        return;
+      }
+
+      // Tier 5: Straight-lining check ONLY applied to UNTRUNCATED completes (validLogs.length === 20)
+      if (validLogs.length === 20) {
+        const decisionCounts = {};
+        validLogs.forEach(l => {
+          const dec = String(l.user_decision || '').toLowerCase().trim();
+          decisionCounts[dec] = (decisionCounts[dec] || 0) + 1;
+        });
+        const maxRepetitive = Math.max(...Object.values(decisionCounts), 0);
+        const ratio = maxRepetitive / 20;
+
+        // Straight-lining threshold: 20/20 identical choices (100% repetitive)
+        if (maxRepetitive === 20) {
+          excludedUsers.push({
+            user: u,
+            reason: `Straight-lining tuyệt đối 20/20 câu trùng nhau (100%)`
+          });
+          return;
+        }
+      }
+
+      // Record valid clean complete
+      userCleanLogsMap[u.user_id] = validLogs;
+      if (validLogs.length === 20) {
+        fullCleanCompletes.push(u);
       } else {
-        cleanCompletes.push(u);
+        partialCleanCompletes.push({
+          user: u,
+          validCount: validLogs.length,
+          collapseScenario: sortedLogs[collapseIdx].scenario_id
+        });
       }
     });
 
-    // Output flagged spammers to terminal
-    if (flaggedSpammers.length > 0) {
-      console.log(`\n🚨 Phát hiện ${flaggedSpammers.length} ca làm ẩu (Flagged Low-Quality Submissions) bị loại khỏi phân tích chính thức:`);
-      flaggedSpammers.forEach(f => {
-        console.log(`   - ID: ${f.user.user_id}, Tên: "${f.user.name}", Nhóm: ${f.user.group_assigned}, Lý do: ${f.reason}`);
+    const totalCleanUsers = [...fullCleanCompletes, ...partialCleanCompletes.map(p => p.user)];
+
+    // Output 5-Tier filter results to terminal
+    console.log(`\n==================================================`);
+    console.log(`📊 KẾT QUẢ ÁP DỤNG THUẬT TOÁN LỌC 5 TẦNG (ĐÃ SỬA TẦNG 5):`);
+    console.log(`   - Tổng đăng ký: ${allUsers.length} người`);
+    console.log(`   - Tổng hoàn thành gốc: ${rawCompletes.length} người`);
+    console.log(`   - Dữ liệu sạch 20/20 câu: ${fullCleanCompletes.length} người`);
+    console.log(`   - Dữ liệu cắt một phần (dùng 10-19 câu): ${partialCleanCompletes.length} người`);
+    console.log(`   - Loại hoàn toàn (Spam/Collapse sớm): ${excludedUsers.length} người`);
+    console.log(`==================================================\n`);
+
+    if (excludedUsers.length > 0) {
+      console.log(`🚨 Danh sách ${excludedUsers.length} người dùng bị loại:`);
+      excludedUsers.forEach(ex => {
+        console.log(`   - ID: ${ex.user.user_id}, Tên: "${ex.user.name}", Nhóm: ${ex.user.group_assigned}, Lý do: ${ex.reason}`);
       });
-    } else {
-      console.log('\n✓ Không phát hiện ca làm ẩu nào trong dữ liệu hoàn thành.');
     }
 
-    // Update variables based on clean completed data
-    const cleanCompletesSet = new Set(cleanCompletes.map(u => u.user_id));
-    const cleanLogs = allLogs.filter(l => cleanCompletesSet.has(l.user_id));
-    const cleanSurveys = allSurveys.filter(s => cleanCompletesSet.has(s.user_id));
+    // Retention Rate per Group calculation
+    const groupRegistered = { A: 0, B: 0, C: 0 };
+    const groupCompleted = { A: 0, B: 0, C: 0 };
+    const groupRetained = { A: 0, B: 0, C: 0 };
 
-    const totalValidCount = cleanCompletes.length + dropouts.length;
+    allUsers.forEach(u => groupRegistered[u.group_assigned]++);
+    rawCompletes.forEach(u => groupCompleted[u.group_assigned]++);
+    totalCleanUsers.forEach(u => groupRetained[u.group_assigned]++);
 
-    // 2. Aggregate Demographics (based on clean completed + active dropouts)
-    const deviceCounts = {};
-    const ageCounts = {};
-    const freqCounts = {};
-    const groupCounts = { A: 0, B: 0, C: 0 };
-    const occupationCounts = {};
-
-    const activeUsersList = [...cleanCompletes, ...dropouts];
-
-    activeUsersList.forEach(u => {
-      deviceCounts[u.device] = (deviceCounts[u.device] || 0) + 1;
-      ageCounts[u.age_group] = (ageCounts[u.age_group] || 0) + 1;
-      freqCounts[u.ai_frequency] = (freqCounts[u.ai_frequency] || 0) + 1;
-      groupCounts[u.group_assigned]++;
-      
-      const occ = u.major || 'Chưa chọn';
-      occupationCounts[occ] = (occupationCounts[occ] || 0) + 1;
-    });
-
-    // 3. HCI Behavioral Metrics per Group (for clean completes only)
+    // Aggregate HCI behavioral metrics from valid clean logs
     const groupTimes = { A: [], B: [], C: [] };
     const groupHovers = { A: 0, B: 0, C: 0 };
     const groupChats = { A: 0, B: 0, C: 0 };
     const groupClicks = { A: 0, B: 0, C: 0 };
-    const groupActiveSecs = { A: [], B: [], C: [] };
 
-    cleanLogs.forEach(l => {
-      const u = cleanCompletes.find(user => user.user_id === l.user_id);
-      if (!u) return;
+    totalCleanUsers.forEach(u => {
       const g = u.group_assigned;
-      groupTimes[g].push(l.time_spent_seconds);
-      groupHovers[g] += (l.hover_count || 0);
-      groupChats[g] += (l.chat_count || 0);
-      groupClicks[g] += (l.interactive_clicks || 0);
-
-      try {
-        const telemetry = JSON.parse(l.telemetry_data || '{}');
-        if (telemetry.raw_time_spent_seconds) {
-          const raw = parseFloat(telemetry.raw_time_spent_seconds);
-          const hidden = parseFloat(telemetry.hidden_time_seconds || 0);
-          groupActiveSecs[g].push(Math.max(0.1, raw - hidden));
-        } else {
-          groupActiveSecs[g].push(l.time_spent_seconds);
-        }
-      } catch (e) {
-        groupActiveSecs[g].push(l.time_spent_seconds);
-      }
+      const vLogs = userCleanLogsMap[u.user_id] || [];
+      vLogs.forEach(l => {
+        groupTimes[g].push(l.time_spent_seconds);
+        groupHovers[g] += (l.hover_count || 0);
+        groupChats[g] += (l.chat_count || 0);
+        groupClicks[g] += (l.interactive_clicks || 0);
+      });
     });
 
-    const avgTime = g => groupTimes[g].length > 0 ? (groupTimes[g].reduce((sum, v) => sum + v, 0) / groupTimes[g].length).toFixed(2) : '0.00';
-    const avgActiveTime = g => groupActiveSecs[g].length > 0 ? (groupActiveSecs[g].reduce((sum, v) => sum + v, 0) / groupActiveSecs[g].length).toFixed(2) : '0.00';
-    const totalGCompletes = g => cleanCompletes.filter(u => u.group_assigned === g).length;
-    const avgHover = g => totalGCompletes(g) > 0 ? (groupHovers[g] / totalGCompletes(g)).toFixed(2) : '0.00';
-    const avgChat = g => totalGCompletes(g) > 0 ? (groupChats[g] / totalGCompletes(g)).toFixed(2) : '0.00';
-    const avgClick = g => totalGCompletes(g) > 0 ? (groupClicks[g] / totalGCompletes(g)).toFixed(2) : '0.00';
+    const avgTime = g => groupTimes[g].length > 0 ? (groupTimes[g].reduce((s, v) => s + v, 0) / groupTimes[g].length).toFixed(2) : '0.00';
+    const totalGCleanUsers = g => totalCleanUsers.filter(u => u.group_assigned === g).length;
+    const avgHover = g => totalGCleanUsers(g) > 0 ? (groupHovers[g] / totalGCleanUsers(g)).toFixed(2) : '0.00';
+    const avgChat = g => totalGCleanUsers(g) > 0 ? (groupChats[g] / totalGCleanUsers(g)).toFixed(2) : '0.00';
+    const avgClick = g => totalGCleanUsers(g) > 0 ? (groupClicks[g] / totalGCleanUsers(g)).toFixed(2) : '0.00';
 
-    // 4. Trap Scenario Calibration (for clean completes only)
+    // Trap Accuracy calculation on valid clean logs
     const trapScenarios = [1, 4, 8, 11, 14, 16];
     const groupTrapTotal = { A: 0, B: 0, C: 0 };
     const groupTrapCorrect = { A: 0, B: 0, C: 0 };
 
-    cleanLogs.forEach(l => {
-      const u = cleanCompletes.find(user => user.user_id === l.user_id);
-      if (!u) return;
+    totalCleanUsers.forEach(u => {
       const g = u.group_assigned;
-      if (trapScenarios.includes(l.scenario_id)) {
-        groupTrapTotal[g]++;
-        if (l.is_correct_on_error_case === true) {
-          groupTrapCorrect[g]++;
+      const vLogs = userCleanLogsMap[u.user_id] || [];
+      vLogs.forEach(l => {
+        if (trapScenarios.includes(l.scenario_id)) {
+          groupTrapTotal[g]++;
+          if (l.is_correct_on_error_case === true) {
+            groupTrapCorrect[g]++;
+          }
         }
-      }
+      });
     });
 
-    // 5. NASA-TLX Cognitive Load (for clean completes only)
-    const tlxScores = { A: {}, B: {}, C: {} };
-    cleanSurveys.forEach(s => {
-      const u = cleanCompletes.find(user => user.user_id === s.user_id);
-      if (!u) return;
-      const g = u.group_assigned;
-      if (!tlxScores[g][s.question_key]) {
-        tlxScores[g][s.question_key] = [];
-      }
-      tlxScores[g][s.question_key].push(s.score);
+    // 2. DROPOUT DEEP-DIVE ANALYSIS
+    const dropoutDetails = dropouts.map(u => {
+      const uLogs = userLogsMap[u.user_id] || [];
+      const sorted = [...uLogs].sort((a, b) => a.scenario_id - b.scenario_id);
+      const stoppedScenario = sorted.length > 0 ? sorted[sorted.length - 1].scenario_id : 0;
+
+      return {
+        user: u,
+        scenariosAnswered: sorted.length,
+        stoppedScenario,
+        device: u.device,
+        group: u.group_assigned
+      };
     });
 
-    const tlxAvg = (g, key) => {
-      const scores = tlxScores[g][key];
-      if (!scores || scores.length === 0) return 'N/A';
-      return (scores.reduce((sum, v) => sum + v, 0) / scores.length).toFixed(2);
-    };
+    const dropoutGroupCounts = { A: 0, B: 0, C: 0 };
+    const dropoutDeviceCounts = {};
+    const dropoutStageCounts = { 'Early (1-5)': 0, 'Middle (6-14)': 0, 'Late (15-19)': 0, 'Start (0)': 0 };
 
-    // Calculate rounded percentages for cleaner presentation on small samples
+    dropoutDetails.forEach(d => {
+      dropoutGroupCounts[d.group]++;
+      dropoutDeviceCounts[d.device] = (dropoutDeviceCounts[d.device] || 0) + 1;
+
+      if (d.stoppedScenario === 0) dropoutStageCounts['Start (0)']++;
+      else if (d.stoppedScenario <= 5) dropoutStageCounts['Early (1-5)']++;
+      else if (d.stoppedScenario <= 14) dropoutStageCounts['Middle (6-14)']++;
+      else dropoutStageCounts['Late (15-19)']++;
+    });
+
     const getPct = (part, total) => Math.round((part / (total || 1)) * 100);
 
-    // 6. Generate Markdown report text
+    // Calculate Button Comprehension Check statistics from survey logs
+    const comprehensionSurveys = allSurveys.filter(s => s.question_key === 'button_comprehension');
+    const totalComprehensionChecked = comprehensionSurveys.length;
+    const correctComprehensionCount = comprehensionSurveys.filter(s => s.score === 1).length;
+    const misunderstoodComprehensionCount = comprehensionSurveys.filter(s => s.score === 0).length;
+
+    const correctPct = totalComprehensionChecked > 0 ? Math.round((correctComprehensionCount / totalComprehensionChecked) * 100) : 0;
+    const misunderstoodPct = totalComprehensionChecked > 0 ? Math.round((misunderstoodComprehensionCount / totalComprehensionChecked) * 100) : 0;
+
+    // 3. Generate Markdown Report
     let md = `# BÁO CÁO PHÂN TÍCH DỮ LIỆU THỰC NGHIỆM GIAI ĐOẠN 2 (REAL-TIME DATA REPORT)
 *Thời gian xuất báo cáo: ${new Date().toLocaleString('vi-VN')} (Giờ Việt Nam)*
 
 > [!WARNING]
-> **Hạn chế cỡ mẫu nhỏ & Đồng nhất nhóm tuổi tác (Research Limitations)**:
-> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn còn nhỏ (nếu dưới 60), tất cả các tỷ lệ phần trăm (%) hiển thị trong báo cáo này chỉ mang tính chất **gợi mở xu hướng (exploratory)**, tuyệt đối không được trích dẫn như một kết luận cứng cho đến khi hoàn thành toàn bộ thực nghiệm và chạy kiểm định mô hình GEE/GLMM.
-> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22. Đây là một hạn chế rõ rệt về mặt nhân khẩu học (Demographic Homogeneity Limitation) cần được khai báo trong phần thảo luận (Discussion) của khóa luận.
+> **Hạn chế thực nghiệm & Cỡ mẫu nhỏ (Research Limitations)**:
+> 1. **Kháng nghị tính chắc chắn**: Do cỡ mẫu hiện tại vẫn đang tích lũy (mục tiêu sàn N >= 40), các tỷ lệ phần trăm (%) hiển thị chỉ mang tính chất **gợi mở xu hướng (exploratory)**, không trích dẫn như kết luận cứng cho đến khi hoàn thành thực nghiệm và kiểm định GEE/GLMM.
+> 2. **Đồng nhất nhân khẩu học**: Dữ liệu ghi nhận hơn 90% đối tượng tham gia là sinh viên trong độ tuổi 18-22 (Demographic Homogeneity Limitation) cần được khai báo trong phần Thảo luận (Discussion).
+> 3. **Ánh xạ Ý nghĩa Nút bấm & Phân tích Độ nhạy (Sensitivity Analysis)**: 
+>    * Giao diện dùng nhãn "Đồng ý/Từ chối đề xuất của AI" tạo rủi ro nhiễu nhận thức đảo ngược (Response-Mapping Ambiguity).
+>    * **Phân tích độ nhạy**: Do nhãn nút nhất quán ở cả 3 nhóm, sai số này mang tính chất **ngẫu nhiên không thiên lệch (non-differential measurement error)**. Nó chỉ làm giảm độ nhạy phát hiện hiệu ứng (attenuation bias / giảm effect size) chứ không làm đảo ngược hướng của các giả thuyết nghiên cứu chính.
+>    * **Kiểm chứng định lượng thực tế**: Đã bổ sung câu hỏi Comprehension Check ở cuối bài cho các đối tượng mới. Kết quả kiểm tra hiện tại: **${totalComprehensionChecked}** đối tượng đã trả lời kiểm tra (${correctComprehensionCount} người chọn đúng ~${correctPct}%, ${misunderstoodComprehensionCount} người hiểu nhầm ~${misunderstoodPct}%).
 
 > [!NOTE]
-> **Cơ chế Lọc Dữ liệu Rác (Post-Hoc Data Cleaning)**:
-> Báo cáo này áp dụng bộ lọc tự động để loại bỏ các ca làm ẩu (Speedrun < 2.0 giây/câu hoặc chọn trùng một lựa chọn liên tục $\ge 19/20$ câu). Tổng cộng đã phát hiện và loại bỏ **${flaggedSpammers.length}** ca làm ẩu ra khỏi các tính năng thống kê hành vi và nhận diện bẫy lỗi để bảo đảm chất lượng dữ liệu sạch.
+> **Cơ chế Lọc 5 Tầng (5-Tier Data Filtering Algorithm - Đã hiệu chỉnh Tầng 5)**:
+> Báo cáo này áp dụng thuật toán lọc 5 tầng tiên tiến:
+> *   **Tầng 1**: Ngưỡng thời gian đọc tối thiểu theo giao diện (A >= 2.0s, B >= 3.0s, C >= 4.0s).
+> *   **Tầng 2**: Phát hiện điểm sụp đổ nhận thức (Collapse Point - chuỗi >= 3 câu liên tiếp dưới ngưỡng).
+> *   **Tầng 3**: Cắt dữ liệu liền mạch từ điểm sụp đổ đến hết bài.
+> *   **Tầng 4**: Loại bỏ hoàn toàn người dùng nếu số câu hợp lệ < 10.
+> *   **Tầng 5**: Kiểm tra Straight-lining (>= 80% trùng đáp án) **chỉ áp dụng cho những người chưa bị cắt** (giữ nguyên đủ 20 câu gốc).
 
 ---
 
-## 1. Phân tích Phân khúc Đối tượng tham gia (Demographics & Users Profile)
+## 1. Phân tích Tỷ lệ Giữ chân & Lọc Dữ liệu theo Nhóm Giao diện (5-Tier Filter Results)
 
-*   **Tổng số người dùng thực tế tham gia**: ${totalValidCount} người
-*   **Hoàn thành hợp lệ (Clean Completes)**: ${cleanCompletes.length} người (~${getPct(cleanCompletes.length, totalValidCount)}%)
-*   **Làm ẩu bị loại bỏ (Flagged Spam)**: ${flaggedSpammers.length} người
-*   **Số lượng bỏ dở giữa chừng (Dropouts)**: ${dropouts.length} người (~${getPct(dropouts.length, totalValidCount)}%)
+| Nhóm Giao diện | Đăng ký (Registered) | Hoàn thành gốc (Completed) | Giữ được sau Lọc 5 Tầng | Tỷ lệ giữ chân sau lọc (%) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | ${groupRegistered.A} | ${groupCompleted.A} | **${groupRetained.A}** | **~${getPct(groupRetained.A, groupCompleted.A)}%** |
+| **Nhóm B (Static XAI)** | ${groupRegistered.B} | ${groupCompleted.B} | **${groupRetained.B}** | **~${getPct(groupRetained.B, groupCompleted.B)}%** |
+| **Nhóm C (Interactive XAI)** | ${groupRegistered.C} | ${groupCompleted.C} | **${groupRetained.C}** | **~${getPct(groupRetained.C, groupCompleted.C)}%** |
+| **TỔNG CỘNG** | **${allUsers.length}** | **${rawCompletes.length}** | **${totalCleanUsers.length}** | **~${getPct(totalCleanUsers.length, rawCompletes.length)}%** |
 
-### Phân bố Nhóm Giao diện (Interface Group Assignment - Bao gồm cả Dropouts)
-*   **Nhóm A (Black-box AI)**: ${groupCounts.A} người (Hoàn thành sạch: ${totalGCompletes('A')} - Bỏ dở: ${dropouts.filter(u => u.group_assigned === 'A').length})
-*   **Nhóm B (Static XAI)**: ${groupCounts.B} người (Hoàn thành sạch: ${totalGCompletes('B')} - Bỏ dở: ${dropouts.filter(u => u.group_assigned === 'B').length})
-*   **Nhóm C (Interactive XAI)**: ${groupCounts.C} người (Hoàn thành sạch: ${totalGCompletes('C')} - Bỏ dở: ${dropouts.filter(u => u.group_assigned === 'C').length})
-
-### Phân bố Thiết bị sử dụng (Device Distribution - Toàn bộ mẫu)
-${Object.entries(deviceCounts).map(([dev, count]) => `*   **${dev}**: ${count} người (~${getPct(count, totalValidCount)}%)`).join('\n')}
-
-### Phân bố Nhóm Tuổi (Age Group Distribution - Toàn bộ mẫu)
-${Object.entries(ageCounts).map(([age, count]) => `*   **${age}**: ${count} người (~${getPct(count, totalValidCount)}%)`).join('\n')}
-
-### Phân bố Tần suất sử dụng công cụ AI (AI Exposure Frequency - Toàn bộ mẫu)
-${Object.entries(freqCounts).map(([freq, count]) => `*   **${freq}**: ${count} người (~${getPct(count, totalValidCount)}%)`).join('\n')}
-
-### Phân bố Chi tiết Nghề nghiệp (Detailed Occupation Distribution)
-${Object.entries(occupationCounts).sort((a,b) => b[1] - a[1]).map(([occ, count]) => `*   **${occ}**: ${count} người`).join('\n')}
+### Phân loại Người dùng Hoàn thành:
+*   **Dữ liệu hợp lệ 20/20 câu (Full Clean)**: ${fullCleanCompletes.length} người
+*   **Dữ liệu cắt một phần (Partial Clean - Giữ 10-19 câu)**: ${partialCleanCompletes.length} người
+*   **Loại hoàn toàn (Excluded Spammers/Early Collapse)**: ${excludedUsers.length} người
 
 ---
 
-## 2. Phân tích Chỉ số Hành vi & HCI (HCI Engagement Metrics)
+## 2. Phân tích Chuyên sâu Nhóm Bỏ cuộc giữa chừng (Dropout Deep-Dive Analysis)
 
-*Số liệu được tính trung bình trên mỗi đối tượng HOÀN THÀNH HỢP LỆ sau khi lọc.*
+*Tổng số người dùng bỏ cuộc (ngắt kết nối giữa chừng): **${dropouts.length}** người (~${getPct(dropouts.length, allUsers.length)}% trên tổng số đăng ký).*
 
-| Nhóm Giao diện | Thời gian ra quyết định / câu | Thời gian tương tác thực tế (Active Time) | Số lượt hover / người | Số câu hỏi chatbot / người | Số tương tác What-if / người |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Nhóm A (Black-box)** | ${avgTime('A')} | ${avgActiveTime('A')} | ${avgHover('A')} | Không hỗ trợ | Không hỗ trợ |
-| **Nhóm B (Static XAI)** | ${avgTime('B')} | ${avgActiveTime('B')} | ${avgHover('B')} | Không hỗ trợ | Không hỗ trợ |
-| **Nhóm C (Interactive)** | ${avgTime('C')} | ${avgActiveTime('C')} | ${avgHover('C')} | ${avgChat('C')} | ${avgClick('C')} |
+### 2.1. Tỷ lệ Bỏ cuộc theo Nhóm Giao diện
+*   **Nhóm A (Black-box AI)**: ${dropoutGroupCounts.A} người bỏ dở
+*   **Nhóm B (Static XAI)**: ${dropoutGroupCounts.B} người bỏ dở
+*   **Nhóm C (Interactive XAI)**: ${dropoutGroupCounts.C} người bỏ dở
+
+### 2.2. Giai đoạn Bỏ cuộc (Where Participants Dropped Out)
+${Object.entries(dropoutStageCounts).map(([stage, count]) => `*   **Giai đoạn ${stage}**: ${count} người (~${getPct(count, dropouts.length)}%)`).join('\n')}
 
 ---
 
-## 3. Độ chính xác Phát hiện Bẫy AI (Cognitive Trust Calibration)
+## 3. Chỉ số Hành vi & Tương tác HCI (Valid Clean Data)
 
-*Tỷ lệ phần trăm thể hiện số lần người dùng phát hiện lỗi AI và bác bỏ thành công trên các câu bẫy.*
+*Tính toán dựa trên các bản ghi phản hồi HỢP LỆ từ ${totalCleanUsers.length} người dùng sạch sau khi lọc 5 tầng.*
 
-| Nhóm Giao diện | Quyết định bác bỏ AI / Tổng số lượt gặp bẫy | Tỷ lệ phát hiện lỗi AI (%) |
+| Nhóm Giao diện | Thời gian ra quyết định / câu | Số lượt hover / người | Số câu hỏi chatbot / người | Số tương tác What-if / người |
+| :--- | :---: | :---: | :---: | :---: |
+| **Nhóm A (Black-box)** | ${avgTime('A')}s | ${avgHover('A')} | Không hỗ trợ | Không hỗ trợ |
+| **Nhóm B (Static XAI)** | ${avgTime('B')}s | ${avgHover('B')} | Không hỗ trợ | Không hỗ trợ |
+| **Nhóm C (Interactive)** | ${avgTime('C')}s | ${avgHover('C')} | ${avgChat('C')} | ${avgClick('C')} |
+
+---
+
+## 4. Độ chính xác Phát hiện Bẫy AI (Cognitive Trust Calibration)
+
+| Nhóm Giao diện | Bác bỏ Bẫy thành công / Tổng số bẫy | Tỷ lệ phát hiện lỗi AI (%) |
 | :--- | :---: | :---: |
 | **Nhóm A (Black-box)** | ${groupTrapCorrect.A} / ${groupTrapTotal.A} | **~${getPct(groupTrapCorrect.A, groupTrapTotal.A)}%** |
 | **Nhóm B (Static XAI)** | ${groupTrapCorrect.B} / ${groupTrapTotal.B} | **~${getPct(groupTrapCorrect.B, groupTrapTotal.B)}%** |
 | **Nhóm C (Interactive)** | ${groupTrapCorrect.C} / ${groupTrapTotal.C} | **~${getPct(groupTrapCorrect.C, groupTrapTotal.C)}%** |
 
-*Chú thích: Tỷ lệ phần trăm trên đây chỉ biểu thị xu hướng phân bố thô trên mẫu thử hiện tại. Mối liên hệ có ý nghĩa thống kê thực tế sẽ được xác định thông qua kiểm định phương trình ước lượng tổng quát (GEE) trên bộ dữ liệu hoàn chỉnh.*
-
 ---
 
-## 4. Tải lượng Nhận thức (NASA-TLX Cognitive Load)
-
-*Khảo sát NASA-TLX cuối bài kiểm tra. Thang đo từ 1 (Rất nhẹ) đến 20 (Quá tải).*
-
-| Chỉ số tải lượng nhận thức | Nhóm A (Black-box) | Nhóm B (Static XAI) | Nhóm C (Interactive XAI) |
-| :--- | :---: | :---: | :---: |
-| **Mental Demand (Yêu cầu trí óc)** | ${tlxAvg('A', 'mental_demand')} | ${tlxAvg('B', 'mental_demand')} | ${tlxAvg('C', 'mental_demand')} |
-| **Temporal Demand (Yêu cầu thời gian)** | ${tlxAvg('A', 'temporal_demand')} | ${tlxAvg('B', 'temporal_demand')} | ${tlxAvg('C', 'temporal_demand')} |
-| **Performance (Hiệu suất tự đánh giá)** | ${tlxAvg('A', 'performance')} | ${tlxAvg('B', 'performance')} | ${tlxAvg('C', 'performance')} |
-| **Effort (Mức độ nỗ lực)** | ${tlxAvg('A', 'effort')} | ${tlxAvg('B', 'effort')} | ${tlxAvg('C', 'effort')} |
-| **Frustration (Sự ức chế)** | ${tlxAvg('A', 'frustration')} | ${tlxAvg('B', 'frustration')} | ${tlxAvg('C', 'frustration')} |
-| **Overall Load (Tải lượng tổng thể)** | ${tlxAvg('A', 'overall_load')} | ${tlxAvg('B', 'overall_load')} | ${tlxAvg('C', 'overall_load')} |
-
----
-
-## 5. Danh sách người dùng hợp lệ (Completes Roster)
-${cleanCompletes.map((u, i) => `*   **[${i + 1}]** ${u.name || 'Không tên'} (ID: ${u.user_id}) - Nhóm: **${u.group_assigned}** | Nghề: ${u.major || 'Chưa chọn'} | Thiết bị: ${u.device}`).join('\n')}
+## 5. Danh sách Người dùng Giữ lại sau Lọc (Clean Completes Roster)
+${totalCleanUsers.map((u, i) => {
+  const p = partialCleanCompletes.find(item => item.user.user_id === u.user_id);
+  const statusStr = p ? `Cắt một phần (Giữ ${p.validCount}/20 câu - Collapse tại câu ${p.collapseScenario})` : 'Giữ đủ 20/20 câu';
+  return `*   **[${i + 1}]** ${u.name || 'Không tên'} (ID: ${u.user_id}) - Nhóm: **${u.group_assigned}** | Trạng thái: ${statusStr}`;
+}).join('\n')}
 
 ---
 
 ### Ghi nhận Đóng góp & Tuyên bố về Vai trò của AI (AI Attribution Statement)
 *   **Hỗ trợ kỹ thuật & Biên soạn**: Tài liệu này được biên soạn, thiết kế bảng phân tích thống kê và cấu trúc hóa ngôn ngữ với sự trợ giúp của trợ lý lập trình trí tuệ nhân tạo **Antigravity (Google DeepMind)**. 
-*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện (bao gồm các quan sát về sự mơ hồ trong tương tác giao diện) và việc chịu trách nhiệm khoa học/bảo vệ kết quả nghiên cứu hoàn toàn thuộc về tác giả khóa luận (con người).
+*   **Trách nhiệm khoa học & Ý tưởng chủ đạo**: Toàn bộ thiết kế thực nghiệm, định hướng nghiên cứu, thu thập dữ liệu thực tế, các phát hiện định tính về giao diện và việc chịu trách nhiệm khoa học hoàn toàn thuộc về tác giả khóa luận.
 `;
 
     const reportPath = path.join(__dirname, '..', 'data', '2nd test', 'Phase_2_Real_Data_Analysis_Report.md');

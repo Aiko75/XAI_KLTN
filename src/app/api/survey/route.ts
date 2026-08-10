@@ -8,6 +8,7 @@ const NASA_TLX_KEYS = new Set([
   "effort",
   "frustration",
   "overall_load",
+  "button_comprehension",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -28,8 +29,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ detail: `Unsupported NASA-TLX key: ${key}` }, { status: 400 });
       }
       const score = nasa_tlx[key];
-      if (typeof score !== "number" || score < 1 || score > 7) {
-        return NextResponse.json({ detail: `NASA-TLX score for ${key} must be in range 1..7` }, { status: 400 });
+      if (typeof score !== "number" || score < 0 || score > 7) {
+        return NextResponse.json({ detail: `NASA-TLX score for ${key} must be in range 0..7` }, { status: 400 });
       }
     }
 

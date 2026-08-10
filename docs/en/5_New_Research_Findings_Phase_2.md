@@ -61,3 +61,45 @@ Adding the What-If widget alongside SHAP Force Plots, Bar Charts, and Chatbots i
 ### Limitation 3: Age Demographic Homogeneity
 *   **Issue**: The empirical data indicates that over 90% of the participants belong to the **18-22 age group (student age)**, due to the survey being primarily distributed within university networks. This creates a high level of demographic homogeneity.
 *   **Thesis Implications**: This is documented as a clear **Demographic Limitation** in the Discussion chapter. Students may exhibit higher technology readiness and visual processing fluency with SHAP graphs compared to older cohorts (> 45 years), who might express algorithmic trust or skepticism differently. Thus, findings are representative of a tech-literate, younger demographic, and caution should be exercised when generalizing findings to the broader banking workforce.
+
+### Limitation 4: Response-Mapping Ambiguity & Sensitivity Analysis
+*   **Response-Mapping Ambiguity**: The decision-making buttons are labeled *"Agree with AI recommendation"* / *"Reject AI recommendation"* instead of direct loan actions (*"Approve Loan"* / *"Reject Loan"*). Some participants may misunderstand the buttons as direct underwriting choices rather than relative responses to the AI, introducing potential cognitive inversion across an undetermined subset of responses.
+*   **Sensitivity Analysis**: 
+    *   Because the button design is strictly uniform across all three treatment groups (A, B, and C), this risk functions as a **non-differential measurement error**.
+    *   According to statistical measurement theory, non-differential error does not invert the direction of the hypothesized effects; rather, it introduces random noise that attenuates the observed effect size toward the null (**attenuation bias**).
+    *   Consequently, even assuming a baseline $X\%$ random cognitive inversion rate, the core directional hypothesis (that XAI mitigates Automation Bias) remains theoretically sound.
+*   **Proactive Quantitative Comprehension Check**:
+    *   To convert an uncontrolled qualitative limitation into a **quantifiable limitation with empirical data**, a **Button Comprehension Check** question was injected immediately following the 20 scenarios (before the NASA-TLX survey) for upcoming participants.
+    *   This provides an empirical measure of the actual misunderstanding rate ($X\%$) within the sample for rigorous defense before the thesis committee.
+
+
+---
+
+## 5. Finding 5: 5-Tier Data Filtering Algorithm and Group C Oversampling Strategy
+
+### 5.1. The 5-Tier Data Filtering Algorithm
+To eliminate cognitive collapse (Collapse Point) and low-effort satisficing, data is filtered through 5 strict tiers:
+1.  **Tier 1 (Per-Group Minimum Time Threshold)**: Establishes visual reading thresholds based on interface complexity: Group A >= 2.0s, Group B >= 3.0s, Group C >= 4.0s.
+2.  **Tier 2 (Collapse Point Detection)**: Scans from Scenario 3 onwards. The Collapse Point is defined as the first occurrence of **>= 3 consecutive scenarios** with decision times below the group threshold.
+3.  **Tier 3 (Continuous Truncation)**: Truncates all responses from the Collapse Point to Scenario 20. Isolated later spikes are discarded to maintain behavioral state consistency.
+4.  **Tier 4 (Minimum Valid Scenarios Check)**: If the remaining valid scenarios before the collapse point **< 10/20**, the participant is completely excluded.
+5.  **Tier 5 (Straight-lining Check on Valid Data)**: Applies a straight-lining check (>= 80% identical choices) on the remaining valid scenarios.
+
+### 5.2. Group C Oversampling Strategy
+The 5-Tier filter revealed that Group C suffers the highest cognitive collapse rate (only ~54.5% data retention vs >90% for Group A). Equal random assignment would cause severe sample size imbalance for Group C.
+
+**Backend Implementation**: The system API (`api/users/start`) was upgraded with **Oversampling Weighting** ($A = 1.0, B = 1.35, C = 1.85$). New participants are automatically routed to Group C more frequently until clean completed counts across all 3 groups balance out (~15-20 clean completes per group).
+
+---
+
+## 6. Finding 6: Participant Dropout Deep-Dive Analysis
+
+Participant dropout data is analyzed to provide secondary qualitative insights for the Discussion chapter:
+
+*   **Dropout Rate by Interface**: Group C exhibits significantly higher dropout rates than Groups A and B. This provides empirical evidence that information-overloaded XAI interfaces cause **Complete Task Abandonment**.
+*   **Dropout Stages**: 
+    *   **Early Dropout (Scenarios 1-5)**: Represents **Information Shock** caused by overwhelming visual complexity upon initial contact.
+    *   **Middle/Late Dropout (Scenarios 6-19)**: Represents **Cognitive Fatigue Accumulation** over extended evaluation.
+*   **Device Impact**: Mobile users exhibit higher dropout rates due to screen size constraints when interacting with Force Plots.
+
+

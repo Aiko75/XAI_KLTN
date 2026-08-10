@@ -14,13 +14,23 @@ async function chooseGroup(): Promise<string> {
     counts[group.group_assigned] = group._count.group_assigned;
   }
 
-  const minCount = Math.min(...Object.values(counts));
-  const leastFilledGroups = Object.keys(counts).filter(
-    (group) => counts[group] === minCount
+  // Retention Multipliers based on empirical attrition rates:
+  // Group A retains ~91.7% (multiplier 1.0)
+  // Group B retains ~69.2% (multiplier 1.35)
+  // Group C retains ~54.5% (multiplier 1.85)
+  const weightedCounts: Record<string, number> = {
+    A: counts.A / 1.0,
+    B: counts.B / 1.35,
+    C: counts.C / 1.85,
+  };
+
+  const minWeighted = Math.min(...Object.values(weightedCounts));
+  const candidateGroups = Object.keys(weightedCounts).filter(
+    (group) => weightedCounts[group] === minWeighted
   );
 
-  const randomIndex = Math.floor(Math.random() * leastFilledGroups.length);
-  return leastFilledGroups[randomIndex];
+  const randomIndex = Math.floor(Math.random() * candidateGroups.length);
+  return candidateGroups[randomIndex];
 }
 
 export async function POST(req: NextRequest) {
