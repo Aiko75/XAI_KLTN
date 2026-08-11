@@ -102,4 +102,22 @@ Nhóm nghiên cứu trích xuất dữ liệu của những người dùng ngắ
     *   Bỏ cuộc tại **Giai đoạn Giữa / Cuối (Câu 6-19)**: Đại diện cho sự **Tích lũy Mệt mỏi Nhận thức (Fatigue Accumulation)** sau thời gian dài suy nghĩ.
 *   **Ảnh hưởng của Thiết bị**: Người dùng truy cập trên thiết bị di động (Mobile) có tỷ lệ bỏ cuộc vượt trội do kích thước màn hình nhỏ gây khó khăn khi thao tác trên biểu đồ Force Plot.
 
+---
+
+## 7. Phân tích Kiểm soát Phương pháp luận & Hạn chế Nghiên cứu (Methodological Controls & Limitations)
+
+### 7.1. Hiện tượng Trùng khớp Tuyệt đối (Perfect Collinearity) về Tuổi tác và Hướng dẫn Giao diện
+Trong mẫu thực tế thu thập, 100% đối tượng tham gia thuộc các nhóm tuổi ngoài 18-22 (bao gồm nhóm <18, 23-30, 31-45, >45) đều thuộc nhóm được nghiên cứu viên trực tiếp hướng dẫn chức năng giao diện tại Câu 1 (`is_explained = true`), trong khi n=0 đối tượng thuộc các nhóm tuổi này nằm ở nhóm tự làm (`is_explained = false`). 
+
+Về mặt toán học thống kê, sự trùng khớp tuyệt đối (Perfect Collinearity / Perfect Confounding) này khiến nghiên cứu **không thể tách biệt được ảnh hưởng của tuổi tác khỏi ảnh hưởng của việc được hướng dẫn trực tiếp**. Do đó, các so sánh theo nhóm tuổi ngoài 18-22 không được diễn giải như bằng chứng về ảnh hưởng của tuổi tác.
+
+### 7.2. Kiểm soát Hiệu ứng Hướng dẫn (Onboarding Instruction Controls)
+Một số người tham gia (chủ yếu thuộc nhóm tuổi ngoài 18-22) được nghiên cứu viên giải thích trực tiếp về chức năng giao diện trong lúc thực hiện Câu 1, nhằm đảm bảo họ đủ tự tin tham gia. Nội dung giải thích tập trung vào chức năng và cách đọc các chỉ số (bao gồm cách phân biệt đánh giá hệ thống và đề xuất AI), không định hướng về quyết định cụ thể. 
+
+*   **Đã loại bỏ thời gian Câu 1**: Do việc giải thích diễn ra trực tiếp trong lúc thao tác Câu 1, thời gian hoàn thành Câu 1 của nhóm `is_explained = true` đã được loại bỏ hoàn toàn khỏi các phân tích thời gian ra quyết định trung bình nhằm tránh làm vọt thời gian ảo.
+*   **Loại bỏ chỉ số What-if khỏi so sánh nhu cầu khám phá**: Tần suất sử dụng công cụ What-if ở nhóm được hướng dẫn phản ánh hành vi dùng thử sau khi xem demo trực tiếp, do đó bị loại khỏi các phân tích so sánh nhu cầu khám phá tự nhiên giữa các nhóm.
+*   **Đánh giá Nhiễu Mớm Bẫy (Demand Characteristics)**: Mặc dù việc giải thích cơ chế đánh giá kép (hệ thống vs AI) có nguy cơ vô tình gợi ý sự hoài nghi với AI, kết quả định lượng trên nhóm tuổi 18-22 (nhóm duy nhất có đối chứng) cho thấy điểm phát hiện bẫy AI ở 2 nhóm gần như tương đồng hoàn toàn (**1.5/4 vs 1.5/4**). Điều này cung cấp bằng chứng thực nghiệm trấn an rằng mức độ ảnh hưởng thực tế của nhiễu mớm bẫy là không đáng kể.
+*   **Tỷ lệ Hoàn thành 100% do Trách nhiệm Xã hội**: Tỷ lệ hoàn thành tuyệt đối 100% của nhóm được giải thích phản ánh hiệu ứng Trách nhiệm Xã hội / Sự hiện diện của nghiên cứu viên (Social Desirability Bias / Researcher Presence), không được diễn giải như bằng chứng về sự vượt trội trong thiết kế usability của giao diện.
+
+
 
