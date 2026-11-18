@@ -69,3 +69,9 @@ skills-lock.json
 
 # local db
 local_db.json
+
+# docs and generated reports
+*.docx
+*.pdf
+scratch/
+data/**/Financial Risk for Loan Approval.csv
